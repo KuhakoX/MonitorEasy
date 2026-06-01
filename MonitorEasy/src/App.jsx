@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import Login from './componentes/login'
+import Login from './pages/login'
 import './App.css'
 
 function App() {

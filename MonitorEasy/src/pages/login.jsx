@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './login.css';
+import '../styles/login.css';
 
 /**
  * Componente de Login e Cadastro para a plataforma MonitorEasy.
