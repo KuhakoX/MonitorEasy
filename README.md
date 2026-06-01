@@ -1,3 +1,5 @@
 # MonitorEasy
-Projeto eduacacional
-qualquer coisa
+## Projeto eduacacional de Monitoria<br>
+
+## Projeto feito em: <br>
+### React, JavaScript
