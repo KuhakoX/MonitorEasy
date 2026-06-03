@@ -1,0 +1,250 @@
+/* ============================================================
+   MonitorEasy.css
+   Estilos principais da tela de login e cadastro
+   ============================================================ */
+
+/* Importação das fontes do Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap');
+
+/* ---------- Variáveis de cor e tamanho ---------- */
+:root {
+  --cor-verde-principal: #2db874;
+  --cor-verde-hover: #1fa362;       /* verde escuro para hover */
+  --cor-verde-fundo-claro: #e8f8ef;
+  --cor-verde-fundo-input: #f0fbf5;
+  --cor-verde-borda-foco: #2db874;
+  --cor-verde-texto-escuro: #1a6e45;
+  --cor-verde-texto-claro: #4dab7e;
+
+  --cor-fundo-pagina: #f0f2f0;
+  --cor-fundo-card: #ffffff;
+  --cor-fundo-input: #fafafa;
+  --cor-fundo-abas: #f2f2f0;
+
+  --cor-texto-principal: #1a1a1a;
+  --cor-texto-secundario: #444444;
+  --cor-texto-desativado: #888888;
+  --cor-texto-placeholder: #aaaaaa;
+
+  --cor-borda-padrao: #e8e8e4;
+
+  --raio-card: 20px;
+  --raio-botao: 12px;
+  --raio-input: 10px;
+  --raio-aba: 9px;
+  --raio-icone: 14px;
+}
+
+/* ---------- Container externo (fundo da página) ---------- */
+.pagina-wrapper {
+  min-height: 100vh;
+  background-color: var(--cor-fundo-pagina);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ---------- Card central branco ---------- */
+.card-principal {
+  background-color: var(--cor-fundo-card);
+  border-radius: var(--raio-card);
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 2px 24px rgba(0, 0, 0, 0.07);
+}
+
+/* ---------- Área do logo no topo ---------- */
+.area-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.75rem;
+  gap: 6px;
+}
+
+/* Caixa ao redor do ícone/imagem do topo */
+.caixa-icone {
+  width: 48px;
+  height: 48px;
+  background-color: var(--cor-verde-fundo-claro);
+  border-radius: var(--raio-icone);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Título principal "MonitorEasy" */
+.titulo-app {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  color: var(--cor-texto-principal);
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+/* Subtítulo abaixo do nome */
+.subtitulo-app {
+  font-size: 13px;
+  color: var(--cor-texto-desativado);
+  margin: 0;
+  text-align: center;
+}
+
+/* ---------- Abas "Entrar" / "Cadastrar" ---------- */
+.abas-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background-color: var(--cor-fundo-abas);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 1.75rem;
+}
+
+/* Cada aba individualmente */
+.aba-botao {
+  padding: 9px 0;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  border-radius: var(--raio-aba);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--cor-texto-desativado);
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.18s ease;
+}
+
+/* Aba ativa (selecionada) */
+.aba-botao.ativa {
+  background-color: var(--cor-fundo-card);
+  color: var(--cor-texto-principal);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.10);
+}
+
+.aba-botao:hover:not(.ativa) {
+  color: var(--cor-verde-principal);
+}
+
+/* ---------- Campos de formulário ---------- */
+.campo-grupo {
+  margin-bottom: 1.1rem;
+}
+
+/* Label de cada campo */
+.campo-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cor-texto-secundario);
+  margin-bottom: 6px;
+}
+
+/* Input de texto genérico */
+.campo-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--cor-borda-padrao);
+  border-radius: var(--raio-input);
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--cor-texto-principal);
+  background-color: var(--cor-fundo-input);
+  transition: border-color 0.16s, background-color 0.16s;
+  box-sizing: border-box;
+  outline: none;
+}
+
+/* Estado de foco do input */
+.campo-input:focus {
+  border-color: var(--cor-verde-borda-foco);
+  background-color: var(--cor-verde-fundo-input);
+}
+
+/* ---------- Botão principal de ação (Entrar / Cadastrar) ---------- */
+.botao-principal {
+  width: 100%;
+  padding: 13px;
+  background-color: var(--cor-verde-principal);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  border: none;
+  border-radius: var(--raio-botao);
+  cursor: pointer;
+  margin-top: 1.25rem;
+  transition: background-color 0.16s, transform 0.1s;
+}
+
+/* Hover com verde escuro */
+.botao-principal:hover {
+  background-color: var(--cor-verde-hover);
+}
+
+/* Clique com leve encolhimento */
+.botao-principal:active {
+  transform: scale(0.98);
+}
+
+/* ---------- Rodapé do formulário com link ---------- */
+.rodape-formulario {
+  text-align: center;
+  font-size: 13px;
+  color: var(--cor-texto-desativado);
+  margin-top: 1.1rem;
+}
+
+.rodape-formulario a {
+  color: var(--cor-verde-principal);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.rodape-formulario a:hover {
+  color: var(--cor-verde-hover);
+  text-decoration: underline;
+}
+
+/* ---------- Mensagem de sucesso após cadastro ---------- */
+.area-sucesso {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 1rem 0;
+  text-align: center;
+}
+
+/* Círculo verde com ícone de check */
+.icone-sucesso {
+  width: 56px;
+  height: 56px;
+  background-color: var(--cor-verde-fundo-claro);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  color: var(--cor-verde-principal);
+}
+
+/* Título da mensagem de sucesso */
+.sucesso-titulo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 19px;
+  margin: 0;
+  color: var(--cor-texto-principal);
+}
+
+/* Descrição da mensagem de sucesso */
+.sucesso-descricao {
+  font-size: 13px;
+  color: var(--cor-texto-desativado);
+  margin: 0;
+  line-height: 1.5;
+}
