@@ -1,0 +1,79 @@
+/* ============================================================
+   SeletorPerfil.css
+   Estilos dos botões de seleção de perfil (Aluno / Monitor)
+   ============================================================ */
+
+/* Grade com dois botões lado a lado */
+.grade-perfis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+/* Cada botão de perfil */
+.botao-perfil {
+  padding: 12px 8px;
+  border: 1.5px solid #e8e8e4;
+  border-radius: 10px;
+  background-color: #fafafa;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transition: border-color 0.16s, background-color 0.16s;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Hover no botão não selecionado */
+.botao-perfil:not(.selecionado):hover {
+  border-color: #2db874;
+  background-color: #f7fdf9;
+}
+
+/* Ícone dentro do botão de perfil */
+.perfil-icone {
+  font-size: 22px;
+  line-height: 1;
+  color: #888888;
+  transition: color 0.16s;
+}
+
+/* Nome do perfil (ex: "Aluno") */
+.perfil-nome {
+  font-size: 13px;
+  font-weight: 500;
+  color: #444444;
+  transition: color 0.16s;
+}
+
+/* Descrição curta do perfil */
+.perfil-descricao {
+  font-size: 11px;
+  color: #aaaaaa;
+  text-align: center;
+  line-height: 1.3;
+  transition: color 0.16s;
+}
+
+/* ---------- Estado selecionado ---------- */
+.botao-perfil.selecionado {
+  border-color: #2db874;
+  background-color: #f0fbf5;
+}
+
+/* Ícone quando selecionado */
+.botao-perfil.selecionado .perfil-icone {
+  color: #2db874;
+}
+
+/* Nome quando selecionado */
+.botao-perfil.selecionado .perfil-nome {
+  color: #1a6e45;
+}
+
+/* Descrição quando selecionado */
+.botao-perfil.selecionado .perfil-descricao {
+  color: #4dab7e;
+}
