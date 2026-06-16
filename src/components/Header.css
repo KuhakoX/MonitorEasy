@@ -8,26 +8,113 @@
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
+.header-brand {
+  align-items: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  padding: 0;
+}
+
+.header-brand-icon {
+  height: 100px;
+  object-fit: contain;
+  width: 150px;
+}
+
 .header-logo {
   font-size: 28px;
   font-weight: 700;
   color: #16a34a;
+  line-height: 1;
 }
 
-.header-login-button {
+.header-login-button,
+.header-user-button {
+  align-items: center;
   background: #16a34a;
-  color: #ffffff;
   border: none;
-  margin-right: 10%;
-  padding: 12px 28px;
   border-radius: 10px;
-  font-size: 16px;
+  color: #ffffff;
   cursor: pointer;
+  display: inline-flex;
+  font-size: 16px;
+  font-weight: 700;
+  gap: 10px;
+  justify-content: center;
+  margin-right: 10%;
+  min-height: 46px;
+  padding: 12px 28px;
   transition: 0.3s;
 }
 
-.header-login-button:hover {
+.header-login-button:hover,
+.header-user-button:hover {
   background: #15803d;
+}
+
+.header-user-button {
+  max-width: 240px;
+  margin-right: 0;
+}
+
+.header-user-button span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-user-icon {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 28px;
+  justify-content: center;
+  width: 28px;
+}
+
+.header-user-icon svg {
+  fill: currentColor;
+  height: 18px;
+  width: 18px;
+}
+
+.header-user-menu {
+  margin-right: 10%;
+  position: relative;
+}
+
+.header-user-dropdown {
+  background: #ffffff;
+  border: 1px solid #dcfce7;
+  border-radius: 8px;
+  box-shadow: 0 12px 28px rgba(22, 163, 74, 0.16);
+  min-width: 150px;
+  padding: 8px;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 20;
+}
+
+.header-user-dropdown button {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #166534;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.header-user-dropdown button:hover {
+  background: #ecfdf5;
 }
 
 @media (max-width: 768px) {
@@ -37,5 +124,24 @@
 
   .header-logo {
     font-size: 22px;
+  }
+
+  .header-brand-icon {
+    height: 40px;
+    width: 40px;
+  }
+
+  .header-login-button,
+  .header-user-button {
+    margin-right: 0;
+    padding: 10px 16px;
+  }
+
+  .header-user-button {
+    max-width: 170px;
+  }
+
+  .header-user-menu {
+    margin-right: 0;
   }
 }

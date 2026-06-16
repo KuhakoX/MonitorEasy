@@ -12,6 +12,19 @@ function formatMeetLink(meet) {
   return `https://meet.google.com/${meet}`;
 }
 
+async function getMonitorAgendaId(idUsuario) {
+  const sql = `
+    SELECT idMonitor
+    FROM monitor
+    WHERE Usuario_idUsuario = ?
+    LIMIT 1
+  `;
+
+  const [rows] = await db.execute(sql, [idUsuario]);
+
+  return rows[0]?.idMonitor || null;
+}
+
 export async function createUsuario(nome, email, senha, tipoUsuario) {
   const sql = `
     INSERT INTO usuario (
@@ -72,16 +85,18 @@ export async function getAllUsuarios() {
 export async function getMonitores() {
   const sql = `
     SELECT
-      m.idMonitor AS id,
+      u.idUsuario AS id,
+      m.idMonitor AS monitorId,
       u.UsuarioNome AS nome,
       u.UsuarioEmail AS email,
-      ma.MateriasNome AS materia,
-      ma.MateriasAssunto AS descricao,
+      COALESCE(ma.MateriasNome, 'Monitor') AS materia,
+      COALESCE(ma.MateriasAssunto, 'Monitor cadastrado na plataforma.') AS descricao,
       m.MonitorNota AS avaliacao,
       m.Meet AS meetLink
-    FROM monitor m
-    INNER JOIN usuario u ON u.idUsuario = m.Usuario_idUsuario
-    INNER JOIN materias ma ON ma.idMaterias = m.Materias_idMaterias
+    FROM usuario u
+    LEFT JOIN monitor m ON m.Usuario_idUsuario = u.idUsuario
+    LEFT JOIN materias ma ON ma.idMaterias = m.Materias_idMaterias
+    WHERE LOWER(TRIM(u.UsuarioTipo)) = 'monitor'
     ORDER BY u.UsuarioNome
   `;
 
@@ -89,29 +104,31 @@ export async function getMonitores() {
 
   return rows.map((monitor) => ({
     ...monitor,
-    avaliacao: String(monitor.avaliacao),
+    avaliacao: monitor.avaliacao ? String(monitor.avaliacao) : "Sem nota",
     meetLink: formatMeetLink(monitor.meetLink),
   }));
 }
 
-export async function getMonitorById(idMonitor) {
+export async function getMonitorById(idUsuario) {
   const sql = `
     SELECT
-      m.idMonitor AS id,
+      u.idUsuario AS id,
+      m.idMonitor AS monitorId,
       u.UsuarioNome AS nome,
       u.UsuarioEmail AS email,
-      ma.MateriasNome AS materia,
-      ma.MateriasAssunto AS descricao,
+      COALESCE(ma.MateriasNome, 'Monitor') AS materia,
+      COALESCE(ma.MateriasAssunto, 'Monitor cadastrado na plataforma.') AS descricao,
       m.MonitorNota AS avaliacao,
       m.Meet AS meetLink
-    FROM monitor m
-    INNER JOIN usuario u ON u.idUsuario = m.Usuario_idUsuario
-    INNER JOIN materias ma ON ma.idMaterias = m.Materias_idMaterias
-    WHERE m.idMonitor = ?
+    FROM usuario u
+    LEFT JOIN monitor m ON m.Usuario_idUsuario = u.idUsuario
+    LEFT JOIN materias ma ON ma.idMaterias = m.Materias_idMaterias
+    WHERE u.idUsuario = ?
+      AND LOWER(TRIM(u.UsuarioTipo)) = 'monitor'
     LIMIT 1
   `;
 
-  const [rows] = await db.execute(sql, [idMonitor]);
+  const [rows] = await db.execute(sql, [idUsuario]);
   const monitor = rows[0];
 
   if (!monitor) {
@@ -120,12 +137,18 @@ export async function getMonitorById(idMonitor) {
 
   return {
     ...monitor,
-    avaliacao: String(monitor.avaliacao),
+    avaliacao: monitor.avaliacao ? String(monitor.avaliacao) : "Sem nota",
     meetLink: formatMeetLink(monitor.meetLink),
   };
 }
 
-export async function getAulasMonitor(idMonitor) {
+export async function getAulasMonitor(idUsuario) {
+  const idMonitor = await getMonitorAgendaId(idUsuario);
+
+  if (!idMonitor) {
+    return [];
+  }
+
   const sql = `
     SELECT
       idCalendario AS id,
@@ -147,7 +170,13 @@ export async function getAulasMonitor(idMonitor) {
   }));
 }
 
-export async function createAulaMonitor(idMonitor, data, hora) {
+export async function createAulaMonitor(idUsuario, data, hora) {
+  const idMonitor = await getMonitorAgendaId(idUsuario);
+
+  if (!idMonitor) {
+    return null;
+  }
+
   const dataHora = `${data} ${hora}:00`;
 
   const sql = `

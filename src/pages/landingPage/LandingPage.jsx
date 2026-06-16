@@ -119,7 +119,7 @@ function LandingPage() {
                   <p>{monitor.descricao}</p>
 
                   <div className="landing-card-info">
-                    <span>Nota {monitor.avaliacao}</span>
+                    <span>Nota ⭐ {monitor.avaliacao}</span>
                   </div>
 
                   <button

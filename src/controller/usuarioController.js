@@ -162,7 +162,14 @@ export async function cadastrarAulaMonitor(req, res) {
       });
     }
 
-    await createAulaMonitor(req.params.id, data, hora);
+    const aulaCriada = await createAulaMonitor(req.params.id, data, hora);
+
+    if (!aulaCriada) {
+      return res.status(400).json({
+        error: "Este monitor ainda nao possui agenda configurada.",
+      });
+    }
+
     const aulas = await getAulasMonitor(req.params.id);
 
     return res.status(201).json(aulas);
