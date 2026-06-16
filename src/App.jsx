@@ -1,6 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
-import "./App.css";
 import LandingPage from "./pages/landingPage/LandingPage";
 import Cadastro from "./pages/cadastro/cadastro";
 import PerfilMonitor from "./pages/perfilMonitor/PerfilMonitor";
