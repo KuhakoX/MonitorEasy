@@ -1,0 +1,348 @@
+.perfil-monitor-page {
+  min-height: 100vh;
+  background: #f3fbf6;
+  color: #1f2937;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.perfil-monitor-header {
+  width: 100%;
+  padding: 20px 60px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.perfil-monitor-header h1 {
+  color: #16a34a;
+  font-size: 28px;
+}
+
+.perfil-monitor-login-button {
+  background: #16a34a;
+  color: #ffffff;
+  border: none;
+  padding: 12px 26px;
+  border-radius: 10px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.perfil-monitor-login-button:hover {
+  background: #15803d;
+}
+
+.perfil-monitor-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 50px 24px;
+}
+
+.perfil-monitor-feedback {
+  background: #ffffff;
+  border: 1px solid #dcfce7;
+  border-radius: 8px;
+  color: #166534;
+  font-size: 16px;
+  padding: 24px;
+  text-align: center;
+}
+
+.perfil-monitor-feedback p {
+  margin-bottom: 16px;
+}
+
+.perfil-monitor-feedback-error {
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+.perfil-monitor-feedback button {
+  background: #16a34a;
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 10px 18px;
+}
+
+.perfil-monitor-card {
+  background: #ffffff;
+  border: 1px solid #dcfce7;
+  border-radius: 20px;
+  padding: 32px;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(22, 163, 74, 0.12);
+  margin-bottom: 35px;
+}
+
+.perfil-monitor-avatar {
+  width: 90px;
+  height: 90px;
+  background: #16a34a;
+  color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 42px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.perfil-monitor-info h2 {
+  font-size: 32px;
+  color: #14532d;
+  margin-bottom: 10px;
+}
+
+.perfil-monitor-info p {
+  color: #4b5563;
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+
+.perfil-monitor-details {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.perfil-monitor-details span {
+  background: #dcfce7;
+  color: #166534;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.perfil-monitor-agendamento {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.perfil-monitor-form-card,
+.perfil-monitor-calendar-card {
+  background: #ffffff;
+  border: 1px solid #dcfce7;
+  border-radius: 20px;
+  padding: 26px;
+  box-shadow: 0 10px 30px rgba(22, 163, 74, 0.12);
+}
+
+.perfil-monitor-form-card h2 {
+  color: #14532d;
+  margin-bottom: 22px;
+}
+
+.perfil-monitor-input-group {
+  margin-bottom: 18px;
+}
+
+.perfil-monitor-input-group label {
+  display: block;
+  color: #166534;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.perfil-monitor-input-group input {
+  width: 80%;
+  padding: 10px;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  background: #f9fffb;
+  color: #1f2937;
+}
+
+.perfil-monitor-input-group input::placeholder {
+  color: #9ca3af;
+}
+
+.perfil-monitor-input-group input:focus {
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+}
+
+.perfil-monitor-create-button {
+  width: 100%;
+  background: #16a34a;
+  color: #ffffff;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.perfil-monitor-create-button:hover {
+  background: #15803d;
+}
+
+.perfil-monitor-create-button:disabled {
+  background: #86efac;
+  cursor: not-allowed;
+}
+
+.perfil-monitor-calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.perfil-monitor-calendar-header h2 {
+  color: #14532d;
+  font-size: 24px;
+}
+
+.perfil-monitor-calendar-header button {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: #dcfce7;
+  color: #166534;
+  border-radius: 50%;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.perfil-monitor-calendar-header button:hover {
+  background: #bbf7d0;
+}
+
+.perfil-monitor-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.perfil-monitor-weekdays span {
+  text-align: center;
+  color: #166534;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.perfil-monitor-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.perfil-monitor-empty-day {
+  min-height: 105px;
+}
+
+.perfil-monitor-day {
+  min-height: 105px;
+  background: #f9fffb;
+  border: 1px solid #dcfce7;
+  border-radius: 14px;
+  padding: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.perfil-monitor-day:hover {
+  background: #ecfdf5;
+  transform: translateY(-2px);
+}
+
+.perfil-monitor-day strong {
+  display: block;
+  color: #14532d;
+  margin-bottom: 8px;
+}
+
+.perfil-monitor-day-selected {
+  border-color: #16a34a;
+  background: #dcfce7;
+}
+
+.perfil-monitor-aula {
+  background: #ffffff;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  padding: 8px;
+  margin-top: 8px;
+}
+
+.perfil-monitor-aula span {
+  display: block;
+  color: #166534;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.perfil-monitor-aula small {
+  color: #4b5563;
+  display: block;
+  font-size: 12px;
+}
+
+.perfil-monitor-meet-button {
+  display: block;
+  width: 100%;
+  background: #22c55e;
+  color: #ffffff;
+  margin-top: 8px;
+  padding: 7px 0;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.perfil-monitor-meet-button:hover {
+  background: #16a34a;
+}
+
+@media (max-width: 900px) {
+  .perfil-monitor-agendamento {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .perfil-monitor-header {
+    padding: 18px 24px;
+  }
+
+  .perfil-monitor-header h1 {
+    font-size: 22px;
+  }
+
+  .perfil-monitor-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .perfil-monitor-details {
+    justify-content: center;
+  }
+
+  .perfil-monitor-calendar-card {
+    overflow-x: auto;
+  }
+
+  .perfil-monitor-calendar-grid,
+  .perfil-monitor-weekdays {
+    min-width: 680px;
+  }
+}

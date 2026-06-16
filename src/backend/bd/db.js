@@ -1,21 +1,13 @@
-import mysql2 from 'mysql2';
+import mysql from "mysql2/promise";
 
-const connection = mysql2.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: '',
-  database: 'monitoreasy',
-  port: 3306
+const db = mysql.createPool({
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "",
+  database: process.env.DB_NAME || "monitoreasy",
+  port: Number(process.env.DB_PORT) || 3306,
+  waitForConnections: true,
+  connectionLimit: 10,
 });
 
-connection.connect((err) => {
-
-    if (err) {
-        console.error('Erro ao realizar conexão com o BD:', err);
-        throw err;
-    }
-
-    console.log('Conexão com o BD realizada com sucesso!');
-});
-
-export default connection;
+export default db;

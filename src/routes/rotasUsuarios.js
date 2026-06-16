@@ -1,17 +1,23 @@
-const express = require('express');
-const app = express();
-const cors = require('cors');
-const connection = requires('../backend/bd/db');
-const { getAllUsuarios, createUsuario, updateUsuario, deleteUsuario } = require('../controller/usuarioController.js');
+import express from "express";
 
-app.use(express.json());
-app.use(cors());
+import {
+  buscarMonitor,
+  cadastrarAulaMonitor,
+  cadastrarUsuario,
+  loginUsuario,
+  listarAulasMonitor,
+  listarMonitores,
+  listarUsuarios,
+} from "../controller/usuarioController.js";
 
-app.get('/usuarios', getAllUsuarios);
-app.post('/usuarios', createUsuario);
-app.put('/usuarios/:id', updateUsuario);
-app.delete('/usuarios/:id', deleteUsuario);
+const router = express.Router();
 
-app.listen(3000, () => {
-    console.log('Servidor rodando na porta 3000');
-});
+router.post("/cadastro", cadastrarUsuario);
+router.post("/login", loginUsuario);
+router.get("/usuarios", listarUsuarios);
+router.get("/monitores", listarMonitores);
+router.get("/monitores/:id", buscarMonitor);
+router.get("/monitores/:id/aulas", listarAulasMonitor);
+router.post("/monitores/:id/aulas", cadastrarAulaMonitor);
+
+export default router;
