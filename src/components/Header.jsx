@@ -6,7 +6,9 @@ function Header() {
 
   return (
     <header className="header">
-      <h1 className="header-logo">Monitor Easy</h1>
+      <h1 className="header-logo"
+      onClick={() => navigate("/")}
+      >Monitor Easy</h1>
 
       <button
         className="header-login-button"

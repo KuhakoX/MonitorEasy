@@ -2,6 +2,7 @@ import {
   createUsuario,
   findUsuarioByEmail,
   getAllUsuarios,
+  getMonitores,
 } from "../models/usuarioModel.js";
 
 export async function cadastrarUsuario(req, res) {
@@ -18,17 +19,17 @@ export async function cadastrarUsuario(req, res) {
 
     if (usuarioExiste) {
       return res.status(400).json({
-        error: "Este email já está cadastrado.",
+        error: "Este email ja esta cadastrado.",
       });
     }
 
     await createUsuario(nome, email, senha, tipoUsuario);
 
     return res.status(201).json({
-      message: "Usuário cadastrado com sucesso!",
+      message: "Usuario cadastrado com sucesso!",
     });
   } catch (error) {
-    console.error("Erro ao cadastrar usuário:", error);
+    console.error("Erro ao cadastrar usuario:", error);
 
     return res.status(500).json({
       error: "Erro interno no servidor.",
@@ -50,7 +51,7 @@ export async function loginUsuario(req, res) {
 
     if (!usuario) {
       return res.status(404).json({
-        error: "Usuário não encontrado.",
+        error: "Usuario nao encontrado.",
       });
     }
 
@@ -66,7 +67,7 @@ export async function loginUsuario(req, res) {
         id: usuario.id,
         nome: usuario.nome,
         email: usuario.email,
-        tipoUsuario: usuario.tipo_usuario,
+        tipoUsuario: usuario.tipoUsuario,
       },
     });
   } catch (error) {
@@ -84,7 +85,21 @@ export async function listarUsuarios(req, res) {
 
     return res.status(200).json(usuarios);
   } catch (error) {
-    console.error("Erro ao listar usuários:", error);
+    console.error("Erro ao listar usuarios:", error);
+
+    return res.status(500).json({
+      error: "Erro interno no servidor.",
+    });
+  }
+}
+
+export async function listarMonitores(req, res) {
+  try {
+    const monitores = await getMonitores();
+
+    return res.status(200).json(monitores);
+  } catch (error) {
+    console.error("Erro ao listar monitores:", error);
 
     return res.status(500).json({
       error: "Erro interno no servidor.",

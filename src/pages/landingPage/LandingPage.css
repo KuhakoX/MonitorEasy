@@ -97,6 +97,25 @@
   gap: 24px;
 }
 
+.landing-feedback {
+  background: #ffffff;
+  border: 1px solid #dcfce7;
+  border-radius: 8px;
+  color: #166534;
+  font-size: 16px;
+  padding: 24px;
+  text-align: center;
+}
+
+.landing-feedback p {
+  margin-bottom: 16px;
+}
+
+.landing-feedback-error {
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
 .landing-card {
   background: #ffffff;
   border: 1px solid #dcfce7;
@@ -161,7 +180,9 @@
   display: block;
   width: 100%;
   background: #22c55e;
+  border: none;
   color: #ffffff;
+  cursor: pointer;
   text-align: center;
   text-decoration: none;
   padding: 12px;
@@ -173,6 +194,21 @@
 
 .landing-profile-button:hover {
   background: #16a34a;
+}
+
+.landing-retry-button {
+  background: #16a34a;
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 10px 18px;
+}
+
+.landing-retry-button:hover {
+  background: #15803d;
 }
 
 @media (max-width: 768px) {

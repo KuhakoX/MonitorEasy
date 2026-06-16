@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import "./PerfilMonitor.css";
 
 import Header from "../../components/Header";
@@ -20,6 +20,7 @@ function PerfilMonitor() {
   const [dataSelecionada, setDataSelecionada] = useState("");
   const [horaSelecionada, setHoraSelecionada] = useState("");
   const [aulas, setAulas] = useState([]);
+  const proximoIdAula = useRef(1);
 
   const meses = [
     "Janeiro",
@@ -94,12 +95,13 @@ function PerfilMonitor() {
     }
 
     const novaAula = {
-      id: Date.now(),
+      id: proximoIdAula.current,
       data: dataSelecionada,
       hora: horaSelecionada,
       meetLink: monitor.meetLink,
     };
 
+    proximoIdAula.current += 1;
     setAulas([...aulas, novaAula]);
     setHoraSelecionada("");
 
