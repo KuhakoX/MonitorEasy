@@ -1,18 +1,36 @@
-import connection from '../backend/bd/db.js';
+import db from '../backend/bd/db.js';
 
-export function read(callback) {
-    connection.query('SELECT * FROM usuarios', callback);
+export async function createUsuario(nome, email, senha, tipoUsuario) {
+  const sql = `
+    INSERT INTO usuarios (nome, email, senha, tipo_usuario)
+    VALUES (?, ?, ?, ?)
+  `;
 
+  const [result] = await db.execute(sql, [
+    nome,
+    email,
+    senha,
+    tipoUsuario,
+  ]);
+
+  return result;
 }
-export function create(nome, email, senha, callback) {
-    const sql = 'INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)';
-    connection.query(sql, [nome, email, senha], callback);
+
+export async function findUsuarioByEmail(email) {
+  const sql = "SELECT * FROM usuarios WHERE email = ?";
+
+  const [rows] = await db.execute(sql, [email]);
+
+  return rows[0];
 }
-export function update(id, nome, email, senha, callback) {
-    const sql = 'UPDATE usuarios SET nome = ?, email = ?, senha = ? WHERE id = ?';
-    connection.query(sql, [nome, email, senha, id], callback);
+
+export async function getAllUsuarios() {
+  const sql = `
+    SELECT id, nome, email, tipo_usuario, criado_em
+    FROM usuarios
+  `;
+
+  const [rows] = await db.execute(sql);
+
+  return rows;
 }
-export function deleteUsuario(id, callback) {
-    const sql = 'DELETE FROM usuarios WHERE id = ?';
-    connection.query(sql, [id], callback);
-}  

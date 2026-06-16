@@ -1,4 +1,6 @@
+import { useNavigate } from "react-router-dom";
 import "./LandingPage.css";
+import Header from "../../components/Header";
 
 function LandingPage() {
   const monitores = [
@@ -38,13 +40,7 @@ function LandingPage() {
 
   return (
     <div className="landing-page">
-      <header className="landing-header">
-        <h1 className="landing-logo">Monitor Easy</h1>
-
-        <button className="landing-login-button">
-          Login
-        </button>
-      </header>
+      <Header />
 
       <main className="landing-main">
         <section className="landing-hero">

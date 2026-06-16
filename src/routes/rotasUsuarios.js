@@ -1,17 +1,15 @@
-const express = require('express');
-const app = express();
-const cors = require('cors');
-const connection = requires('../backend/bd/db');
-const { getAllUsuarios, createUsuario, updateUsuario, deleteUsuario } = require('../controller/usuarioController.js');
+import express from "express";
 
-app.use(express.json());
-app.use(cors());
+import {
+  cadastrarUsuario,
+  loginUsuario,
+  listarUsuarios,
+} from "../controllers/usuarioController.js";
 
-app.get('/usuarios', getAllUsuarios);
-app.post('/usuarios', createUsuario);
-app.put('/usuarios/:id', updateUsuario);
-app.delete('/usuarios/:id', deleteUsuario);
+const router = express.Router();
 
-app.listen(3000, () => {
-    console.log('Servidor rodando na porta 3000');
-});
+router.post("/cadastro", cadastrarUsuario);
+router.post("/login", loginUsuario);
+router.get("/usuarios", listarUsuarios);
+
+export default router;
