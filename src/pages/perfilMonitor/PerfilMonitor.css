@@ -40,6 +40,36 @@
   padding: 50px 24px;
 }
 
+.perfil-monitor-feedback {
+  background: #ffffff;
+  border: 1px solid #dcfce7;
+  border-radius: 8px;
+  color: #166534;
+  font-size: 16px;
+  padding: 24px;
+  text-align: center;
+}
+
+.perfil-monitor-feedback p {
+  margin-bottom: 16px;
+}
+
+.perfil-monitor-feedback-error {
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+.perfil-monitor-feedback button {
+  background: #16a34a;
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 10px 18px;
+}
+
 .perfil-monitor-card {
   background: #ffffff;
   border: 1px solid #dcfce7;
@@ -161,6 +191,11 @@
   background: #15803d;
 }
 
+.perfil-monitor-create-button:disabled {
+  background: #86efac;
+  cursor: not-allowed;
+}
+
 .perfil-monitor-calendar-header {
   display: flex;
   justify-content: space-between;
@@ -254,11 +289,19 @@
   margin-bottom: 6px;
 }
 
+.perfil-monitor-aula small {
+  color: #4b5563;
+  display: block;
+  font-size: 12px;
+}
+
 .perfil-monitor-meet-button {
   display: block;
   width: 100%;
   background: #22c55e;
   color: #ffffff;
+  margin-top: 8px;
+  padding: 7px 0;
   text-align: center;
   text-decoration: none;
   border-radius: 8px;

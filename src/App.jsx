@@ -10,6 +10,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/perfil-monitor" element={<PerfilMonitor />} />
+        <Route path="/perfil-monitor/:id" element={<PerfilMonitor />} />
       </Routes>
     </BrowserRouter>
   );

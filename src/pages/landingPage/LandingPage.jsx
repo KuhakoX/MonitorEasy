@@ -125,7 +125,7 @@ function LandingPage() {
                   <button
                     className="landing-profile-button"
                     type="button"
-                    onClick={() => navigate("/perfil-monitor")}
+                    onClick={() => navigate(`/perfil-monitor/${monitor.id}`)}
                   >
                     Ver perfil
                   </button>

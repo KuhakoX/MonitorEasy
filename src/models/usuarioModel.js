@@ -1,5 +1,17 @@
 import db from "../backend/bd/db.js";
 
+function formatMeetLink(meet) {
+  if (!meet) {
+    return null;
+  }
+
+  if (meet.startsWith("http://") || meet.startsWith("https://")) {
+    return meet;
+  }
+
+  return `https://meet.google.com/${meet}`;
+}
+
 export async function createUsuario(nome, email, senha, tipoUsuario) {
   const sql = `
     INSERT INTO usuario (
@@ -65,7 +77,8 @@ export async function getMonitores() {
       u.UsuarioEmail AS email,
       ma.MateriasNome AS materia,
       ma.MateriasAssunto AS descricao,
-      m.MonitorNota AS avaliacao
+      m.MonitorNota AS avaliacao,
+      m.Meet AS meetLink
     FROM monitor m
     INNER JOIN usuario u ON u.idUsuario = m.Usuario_idUsuario
     INNER JOIN materias ma ON ma.idMaterias = m.Materias_idMaterias
@@ -77,5 +90,82 @@ export async function getMonitores() {
   return rows.map((monitor) => ({
     ...monitor,
     avaliacao: String(monitor.avaliacao),
+    meetLink: formatMeetLink(monitor.meetLink),
   }));
+}
+
+export async function getMonitorById(idMonitor) {
+  const sql = `
+    SELECT
+      m.idMonitor AS id,
+      u.UsuarioNome AS nome,
+      u.UsuarioEmail AS email,
+      ma.MateriasNome AS materia,
+      ma.MateriasAssunto AS descricao,
+      m.MonitorNota AS avaliacao,
+      m.Meet AS meetLink
+    FROM monitor m
+    INNER JOIN usuario u ON u.idUsuario = m.Usuario_idUsuario
+    INNER JOIN materias ma ON ma.idMaterias = m.Materias_idMaterias
+    WHERE m.idMonitor = ?
+    LIMIT 1
+  `;
+
+  const [rows] = await db.execute(sql, [idMonitor]);
+  const monitor = rows[0];
+
+  if (!monitor) {
+    return null;
+  }
+
+  return {
+    ...monitor,
+    avaliacao: String(monitor.avaliacao),
+    meetLink: formatMeetLink(monitor.meetLink),
+  };
+}
+
+export async function getAulasMonitor(idMonitor) {
+  const sql = `
+    SELECT
+      idCalendario AS id,
+      CalendarioTitulo AS titulo,
+      DATE_FORMAT(CalendarioData, '%Y-%m-%d') AS data,
+      DATE_FORMAT(CalendarioData, '%H:%i') AS hora,
+      m.Meet AS meetLink
+    FROM calendario c
+    INNER JOIN monitor m ON m.idMonitor = c.Monitor_idMonitor
+    WHERE c.Monitor_idMonitor = ?
+    ORDER BY c.CalendarioData
+  `;
+
+  const [rows] = await db.execute(sql, [idMonitor]);
+
+  return rows.map((aula) => ({
+    ...aula,
+    meetLink: formatMeetLink(aula.meetLink),
+  }));
+}
+
+export async function createAulaMonitor(idMonitor, data, hora) {
+  const dataHora = `${data} ${hora}:00`;
+
+  const sql = `
+    INSERT INTO calendario (
+      idCalendario,
+      CalendarioData,
+      CalendarioTitulo,
+      Monitor_idMonitor
+    )
+    SELECT
+      COALESCE(MAX(idCalendario), 0) + 1,
+      ?,
+      'Aula agendada',
+      ?
+    FROM calendario
+  `;
+
+  const [result] = await db.execute(sql, [dataHora, idMonitor]);
+
+  return result;
 }
