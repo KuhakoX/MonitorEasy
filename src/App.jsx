@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import LandingPage from "./pages/landingPage/LandingPage";
 import Cadastro from "./pages/cadastro/cadastro";
+import Configuracoes from "./pages/configuracoes/Configuracoes";
 import PerfilMonitor from "./pages/perfilMonitor/PerfilMonitor";
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Cadastro />} />
         <Route path="/cadastro" element={<Cadastro />} />
+        <Route path="/configuracoes" element={<Configuracoes />} />
         <Route path="/perfil-monitor" element={<PerfilMonitor />} />
         <Route path="/perfil-monitor/:id" element={<PerfilMonitor />} />
       </Routes>

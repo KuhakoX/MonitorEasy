@@ -18,11 +18,11 @@
 .landing-logo {
   font-size: 28px;
   font-weight: 700;
-  color: #16a34a;
+  color: #107D68;
 }
 
 .landing-login-button {
-  background: #16a34a;
+  background: #107D68;
   margin-right: 30px;
   color: #ffffff;
   border: none;
@@ -133,7 +133,7 @@
 .landing-avatar {
   width: 58px;
   height: 58px;
-  background: #16a34a;
+  background: #107D68;
   color: #ffffff;
   border-radius: 50%;
   display: flex;
@@ -179,7 +179,7 @@
 .landing-profile-button {
   display: block;
   width: 100%;
-  background: #22c55e;
+  background: #107D68;
   border: none;
   color: #ffffff;
   cursor: pointer;
@@ -193,11 +193,11 @@
 }
 
 .landing-profile-button:hover {
-  background: #16a34a;
+  background: #107D68;
 }
 
 .landing-retry-button {
-  background: #16a34a;
+  background: #107D68;
   border: none;
   border-radius: 8px;
   color: #ffffff;

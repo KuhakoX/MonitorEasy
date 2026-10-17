@@ -1,13 +1,21 @@
-import mysql from "mysql2/promise";
+import pg from "pg";
 
-const db = mysql.createPool({
-  host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "",
-  database: process.env.DB_NAME || "monitoreasy",
-  port: Number(process.env.DB_PORT) || 3306,
-  waitForConnections: true,
-  connectionLimit: 10,
+const { Pool } = pg;
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error("DATABASE_URL nao foi definida para conectar ao Supabase.");
+}
+
+const db = new Pool({
+  connectionString,
+  max: 10,
+  idleTimeoutMillis: 30_000,
+  connectionTimeoutMillis: 10_000,
+});
+
+db.on("error", (error) => {
+  console.error("Erro inesperado no pool PostgreSQL:", error);
 });
 
 export default db;

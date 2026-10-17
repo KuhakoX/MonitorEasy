@@ -1,3 +1,4 @@
+import "dotenv/config";
 import cors from "cors";
 import express from "express";
 import rotasUsuarios from "../routes/rotasUsuarios.js";

@@ -1,6 +1,6 @@
 # Monitor Easy
 
-O **Monitor Easy** é uma aplicação web desenvolvida em React com backend em Node.js e banco de dados MySQL. O objetivo do projeto é facilitar o cadastro, login e gerenciamento de monitores, permitindo que alunos encontrem monitores por matéria e visualizem horários disponíveis para aulas.
+O **Monitor Easy** é uma aplicação web desenvolvida em React com backend em Node.js e PostgreSQL hospedado no Supabase. O objetivo do projeto é facilitar o cadastro, login e gerenciamento de monitores, permitindo que alunos encontrem monitores por matéria e visualizem horários disponíveis para aulas.
 
 ## Tecnologias utilizadas
 
@@ -9,41 +9,43 @@ O **Monitor Easy** é uma aplicação web desenvolvida em React com backend em N
 * CSS
 * Node.js
 * Express
-* MySQL
-* Aiven MySQL
+* PostgreSQL
+* Supabase
 * CORS
 * Dotenv
-* MySQL2
+* `pg`
+* `bcryptjs`
 
 ## Funcionalidades
 
 * Página inicial com apresentação do projeto
 * Tela de cadastro de usuários
 * Tela de login
+* Configurações de conta específicas para alunos e monitores
 * Perfil do monitor
 * Exibição de nome, nota e matéria do monitor
 * Calendário interativo para criação de horários de aula
 * Botão para acessar aula pelo Google Meet
-* Integração com banco de dados MySQL
+* Integração com banco de dados PostgreSQL no Supabase
+
+As configurações permitem que alunos editem nome e biografia; monitores também
+podem gerenciar as matérias ensinadas e o link do Google Meet. A troca de senha
+é uma ação separada e opcional. As tabelas são criadas por migrações versionadas
+em `supabase/migrations`, e as senhas são armazenadas com hash.
 
 ## Estrutura do projeto
 
 ```txt
-monitor-easy/
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   └── package.json
-│
-└── backend/
-    ├── server.js
-    ├── db.js
-    ├── .env
-    ├── ca.pem
-    └── package.json
+MonitorEasy/
+├── src/
+│   ├── backend/
+│   ├── controller/
+│   ├── models/
+│   ├── pages/
+│   └── routes/
+├── supabase/
+│   └── migrations/
+└── .env
 ```
 
 ## Como executar o projeto
@@ -60,112 +62,64 @@ Depois entre na pasta do projeto:
 cd monitor-easy
 ```
 
-## Configuração do frontend
-
-Entre na pasta do frontend:
-
-```bash
-cd frontend
-```
-
-Instale as dependências:
+Na raiz do projeto, instale as dependências:
 
 ```bash
 npm install
 ```
 
-Execute o projeto:
+Crie `.env` a partir de `.env.example` e informe a connection string PostgreSQL
+do projeto Supabase em `DATABASE_URL`. Essa variável é exclusiva do backend:
+não a renomeie para `VITE_*` nem a exponha no frontend.
+
+```env
+DATABASE_URL=postgresql://...
+PORT=3001
+```
+
+### Aplicar o esquema no Supabase
+
+Instale/execute a Supabase CLI, autentique-se e vincule o projeto pelo project
+ref encontrado no painel do Supabase:
+
+```txt
+npx supabase login
+npx supabase link --project-ref SEU_PROJECT_REF
+npx supabase db push
+```
+
+O comando aplica as migrações pendentes de `supabase/migrations`.
+
+### Executar localmente
+
+```bash
+npm run api
+```
+
+Em outro terminal, inicie o frontend:
 
 ```bash
 npm run dev
 ```
 
-O frontend será iniciado em:
-
-```txt
-http://localhost:5173
-```
-
-## Configuração do backend
-
-Entre na pasta do backend:
-
-```bash
-cd backend
-```
-
-Instale as dependências:
-
-```bash
-npm install
-```
-
-Instale os pacotes necessários:
-
-```bash
-npm install express mysql2 cors dotenv
-```
-
-Crie um arquivo `.env` dentro da pasta `backend` com as informações do banco de dados:
-
-```env
-DB_HOST=seu-host-do-aiven
-DB_PORT=sua-porta
-DB_USER=avnadmin
-DB_PASSWORD=sua-senha
-DB_NAME=defaultdb
-PORT=3001
-```
-
-Também é necessário adicionar o certificado SSL do banco de dados Aiven.
-
-Baixe o certificado no painel do Aiven e salve na pasta `backend` com o nome:
-
-```txt
-ca.pem
-```
-
-Execute o backend:
-
-```bash
-node server.js
-```
-
-O backend será iniciado em:
-
-```txt
-http://localhost:3001
-```
-
-## Banco de dados
-
-O banco de dados utilizado é MySQL hospedado na plataforma Aiven.
-
-Exemplo de tabela de usuários:
-
-```sql
-CREATE TABLE usuarios (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  nome VARCHAR(100) NOT NULL,
-  email VARCHAR(100) NOT NULL UNIQUE,
-  senha VARCHAR(100) NOT NULL
-);
-```
+O frontend fica em `http://localhost:5173` e a API em
+`http://localhost:3001/api`.
 
 ## Rotas do backend
 
 ### Testar conexão com o banco
 
 ```http
-GET /teste-banco
+GET /api/health
 ```
 
-Essa rota testa se o backend está conseguindo se conectar ao banco de dados.
+Essa rota verifica se a API está em execução. A conexão com o banco é validada
+pelas operações que consultam o PostgreSQL.
 
 ### Cadastro de usuário
 
 ```http
-POST /cadastro
+POST /api/cadastro
 ```
 
 Corpo da requisição:
@@ -181,7 +135,7 @@ Corpo da requisição:
 ### Login de usuário
 
 ```http
-POST /login
+POST /api/login
 ```
 
 Corpo da requisição:
@@ -196,16 +150,19 @@ Corpo da requisição:
 ## Fluxo da aplicação
 
 ```txt
-React → Backend Node.js → Banco de dados MySQL
+React → Backend Node.js → PostgreSQL no Supabase
 ```
 
-O React não se conecta diretamente ao banco de dados. Ele envia requisições para o backend, e o backend é responsável por acessar o MySQL.
+O React não se conecta diretamente ao banco de dados. Ele envia requisições para
+o backend; a connection string fica somente no servidor.
 
-## Observação sobre senhas
+## Migração dos dados existentes
 
-Neste projeto, as senhas estão sendo salvas sem criptografia por se tratar de um projeto acadêmico simples.
-
-Em projetos reais, o recomendado é utilizar criptografia de senhas com bibliotecas como `bcrypt`.
+O esquema PostgreSQL está preparado, mas aplicar a migração **não copia
+automaticamente** os registros do banco MySQL antigo. Faça backup do banco
+anterior e valide a migração dos dados em um projeto Supabase de teste antes de
+trocar o ambiente utilizado pela aplicação. As senhas do novo esquema usam
+hash; dados legados precisam ser convertidos para hash durante a transferência.
 
 ## Autor
 

@@ -73,7 +73,7 @@
 }
 
 .cadastro-form-header h2 {
-  color: #14532d;
+  color: #107D68;
   font-size: 30px;
   font-weight: 700;
   margin: 0 0 18px;
@@ -102,7 +102,7 @@
 }
 
 .cadastro-tab.ativo {
-  background: #16a34a;
+  background: #107D68;
   color: #ffffff;
 }
 
@@ -136,7 +136,7 @@
 
 .cadastro-field input:focus,
 .cadastro-field select:focus {
-  border-color: #16a34a;
+  border-color: #107D68;
   box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.16);
 }
 
@@ -162,7 +162,7 @@
 
 .cadastro-submit {
   width: 100%;
-  background: #16a34a;
+  background: #107D68;
   border: none;
   border-radius: 8px;
   color: #ffffff;

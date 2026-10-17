@@ -50,18 +50,26 @@
   }
 }
 
-body {
-  margin: 0;
-}
-
+html,
+body,
 #root {
   width: 100%;
   max-width: 100%;
   margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+body {
+  background: #f3fbf6;
   text-align: center;
   min-height: 100svh;
   display: flex;
   flex-direction: column;
+}
+
+* {
   box-sizing: border-box;
 }
 

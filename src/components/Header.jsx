@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import icone from "../assets/icone.png";
 import "./Header.css";
@@ -23,6 +23,18 @@ function Header() {
   const location = useLocation();
   const [usuarioLogado, setUsuarioLogado] = useState(buscarUsuarioLogado);
   const [menuAberto, setMenuAberto] = useState(false);
+
+  useEffect(() => {
+    function atualizarUsuario() {
+      setUsuarioLogado(buscarUsuarioLogado());
+    }
+
+    window.addEventListener("usuario-atualizado", atualizarUsuario);
+
+    return () => {
+      window.removeEventListener("usuario-atualizado", atualizarUsuario);
+    };
+  }, []);
 
   function fazerLogout() {
     localStorage.removeItem("usuarioLogado");
@@ -58,6 +70,15 @@ function Header() {
 
           {menuAberto && (
             <div className="header-user-dropdown">
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuAberto(false);
+                  navigate("/configuracoes");
+                }}
+              >
+                Configuracoes
+              </button>
               <button type="button" onClick={fazerLogout}>
                 Sair
               </button>

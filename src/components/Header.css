@@ -26,14 +26,14 @@
 .header-logo {
   font-size: 28px;
   font-weight: 700;
-  color: #16a34a;
+  color: #107D68;
   line-height: 1;
 }
 
 .header-login-button,
 .header-user-button {
   align-items: center;
-  background: #16a34a;
+  background: #107D68;
   border: none;
   border-radius: 10px;
   color: #ffffff;
@@ -51,7 +51,7 @@
 
 .header-login-button:hover,
 .header-user-button:hover {
-  background: #15803d;
+  background: #107D68;
 }
 
 .header-user-button {

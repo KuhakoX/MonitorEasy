@@ -16,12 +16,12 @@
 }
 
 .perfil-monitor-header h1 {
-  color: #16a34a;
+  color: #107D68;
   font-size: 28px;
 }
 
 .perfil-monitor-login-button {
-  background: #16a34a;
+  background: #107D68;
   color: #ffffff;
   border: none;
   padding: 12px 26px;
@@ -60,7 +60,7 @@
 }
 
 .perfil-monitor-feedback button {
-  background: #16a34a;
+  background: #107D68;
   border: none;
   border-radius: 8px;
   color: #ffffff;
@@ -85,7 +85,7 @@
 .perfil-monitor-avatar {
   width: 90px;
   height: 90px;
-  background: #16a34a;
+  background: #107D68;
   color: #ffffff;
   border-radius: 50%;
   display: flex;
@@ -177,7 +177,7 @@
 
 .perfil-monitor-create-button {
   width: 100%;
-  background: #16a34a;
+  background: #107D68;
   color: #ffffff;
   border: none;
   padding: 14px;
@@ -188,11 +188,11 @@
 }
 
 .perfil-monitor-create-button:hover {
-  background: #15803d;
+  background: #107D68;
 }
 
 .perfil-monitor-create-button:disabled {
-  background: #86efac;
+  background: #107D68;
   cursor: not-allowed;
 }
 
@@ -269,7 +269,7 @@
 }
 
 .perfil-monitor-day-selected {
-  border-color: #16a34a;
+  border-color: #107D68;
   background: #dcfce7;
 }
 
@@ -298,7 +298,7 @@
 .perfil-monitor-meet-button {
   display: block;
   width: 100%;
-  background: #22c55e;
+  background: #107D68;
   color: #ffffff;
   margin-top: 8px;
   padding: 7px 0;
@@ -310,7 +310,7 @@
 }
 
 .perfil-monitor-meet-button:hover {
-  background: #16a34a;
+  background: #107D68;
 }
 
 @media (max-width: 900px) {

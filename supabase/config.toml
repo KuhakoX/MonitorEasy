@@ -1,0 +1,7 @@
+project_id = "monitoreasy"
+
+[db.migrations]
+enabled = true
+
+[db.seed]
+enabled = false

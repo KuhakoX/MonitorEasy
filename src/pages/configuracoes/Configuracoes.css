@@ -1,0 +1,325 @@
+.configuracoes-page {
+  min-height: 100vh;
+  background: #f3fbf6;
+  color: #1f2937;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.configuracoes-main {
+  margin: 0 auto;
+  max-width: 1000px;
+  padding: 48px 24px 64px;
+  text-align: left;
+}
+
+.configuracoes-heading {
+  margin-bottom: 28px;
+}
+
+.configuracoes-eyebrow {
+  color: #107d68;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.configuracoes-heading h1 {
+  color: #14532d;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: normal;
+  margin: 6px 0 8px;
+}
+
+.configuracoes-heading p,
+.configuracoes-card-heading p,
+.configuracoes-hint {
+  color: #64748b;
+  font-size: 15px;
+}
+
+.configuracoes-card {
+  background: #ffffff;
+  border: 1px solid #dcfce7;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(22, 163, 74, 0.1);
+  padding: 32px;
+}
+
+.configuracoes-card-heading {
+  align-items: center;
+  border-bottom: 1px solid #e5f3e9;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 26px;
+  padding-bottom: 22px;
+}
+
+.configuracoes-card-heading h2 {
+  color: #14532d;
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+
+.configuracoes-role {
+  background: #dcfce7;
+  border-radius: 999px;
+  color: #166534;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 7px 14px;
+}
+
+.configuracoes-grid {
+  display: grid;
+  gap: 22px 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.configuracoes-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.configuracoes-field-wide {
+  grid-column: 1 / -1;
+}
+
+.configuracoes-field label {
+  color: #166534;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.configuracoes-field input,
+.configuracoes-field textarea,
+.configuracoes-add-materia input {
+  background: #ffffff;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  color: #1f2937;
+  font: inherit;
+  font-size: 15px;
+  min-height: 46px;
+  outline: none;
+  padding: 11px 13px;
+  width: 100%;
+}
+
+.configuracoes-field textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.configuracoes-field input:focus,
+.configuracoes-field textarea:focus,
+.configuracoes-add-materia input:focus {
+  border-color: #107d68;
+  box-shadow: 0 0 0 3px rgba(16, 125, 104, 0.12);
+}
+
+.configuracoes-field small {
+  color: #64748b;
+  font-size: 12px;
+  text-align: right;
+}
+
+.configuracoes-field h3 {
+  color: #14532d;
+  font-size: 17px;
+  margin: 2px 0 0;
+}
+
+.configuracoes-hint {
+  margin-top: -4px;
+}
+
+.configuracoes-password-section {
+  display: grid;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.configuracoes-password-section h3 {
+  color: #14532d;
+  font-size: 17px;
+  margin: 0 0 7px;
+}
+
+.configuracoes-password-toggle,
+.configuracoes-password-cancel {
+  background: #ffffff;
+  border: 1px solid #107d68;
+  border-radius: 8px;
+  color: #107d68;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  min-height: 44px;
+  padding: 0 18px;
+  width: fit-content;
+}
+
+.configuracoes-password-toggle:hover,
+.configuracoes-password-cancel:hover {
+  background: #ecfdf5;
+}
+
+.configuracoes-password-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.configuracoes-password-form {
+  border: 1px solid #dcfce7;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.configuracoes-add-materia {
+  display: flex;
+  gap: 10px;
+}
+
+.configuracoes-add-materia button,
+.configuracoes-save {
+  background: #107d68;
+  border: 0;
+  border-radius: 8px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 0 18px;
+  white-space: nowrap;
+}
+
+.configuracoes-add-materia button:hover,
+.configuracoes-save:hover {
+  background: #0c6657;
+}
+
+.configuracoes-materias {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  min-height: 32px;
+}
+
+.configuracoes-materias > p {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.configuracoes-materia {
+  align-items: center;
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  border-radius: 999px;
+  color: #166534;
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 600;
+  gap: 7px;
+  padding: 5px 7px 5px 12px;
+}
+
+.configuracoes-materia button {
+  align-items: center;
+  background: #d1fae5;
+  border: 0;
+  border-radius: 50%;
+  color: #166534;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 17px;
+  height: 22px;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  width: 22px;
+}
+
+.configuracoes-feedback {
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 18px 0;
+  padding: 12px 14px;
+}
+
+.configuracoes-erro {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.configuracoes-sucesso {
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+
+.configuracoes-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.configuracoes-save {
+  min-height: 46px;
+  padding: 0 24px;
+}
+
+.configuracoes-save:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+@media (max-width: 640px) {
+  .configuracoes-main {
+    padding: 32px 16px 48px;
+  }
+
+  .configuracoes-heading h1 {
+    font-size: 29px;
+  }
+
+  .configuracoes-card {
+    padding: 22px 18px;
+  }
+
+  .configuracoes-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .configuracoes-field-wide {
+    grid-column: auto;
+  }
+
+  .configuracoes-add-materia {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .configuracoes-add-materia button {
+    min-height: 44px;
+  }
+
+  .configuracoes-password-actions {
+    flex-direction: column-reverse;
+  }
+
+  .configuracoes-password-actions button,
+  .configuracoes-password-toggle {
+    width: 100%;
+  }
+}
