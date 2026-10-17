@@ -105,6 +105,24 @@ npm run dev
 O frontend fica em `http://localhost:5173` e a API em
 `http://localhost:3001/api`.
 
+### Publicação
+
+O frontend e a API Express podem ser publicados juntos na Vercel. Os arquivos
+em `api/` encaminham as rotas `/api` para a mesma aplicação Express usada no
+desenvolvimento local. Mantenha `VITE_API_URL` vazia quando frontend e API
+estiverem no mesmo domínio.
+
+Configure no projeto Vercel as variáveis de ambiente do backend:
+
+* `DATABASE_URL`: URI PostgreSQL do Supabase; use o pooler recomendado pelo
+  painel **Connect** para o ambiente de execução.
+* `SUPABASE_CA_CERT`: conteúdo PEM do certificado CA oficial do Supabase,
+  baixado em **Database → Settings → SSL Configuration**.
+
+Não configure `DATABASE_URL` como variável `VITE_*`. Ela e o certificado são
+usados exclusivamente pela função Node.js. Após adicionar as funções e variáveis,
+faça um novo deploy na Vercel.
+
 ## Rotas do backend
 
 ### Testar conexão com o banco

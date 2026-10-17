@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
+import { apiUrl, lerRespostaApi } from "../../lib/api";
 import "./LandingPage.css";
 
 function LandingPage() {
@@ -14,13 +15,13 @@ function LandingPage() {
       setCarregando(true);
       setErro("");
 
-      const resposta = await fetch("/api/monitores");
+      const resposta = await fetch(apiUrl("/api/monitores"));
 
       if (!resposta.ok) {
         throw new Error("Nao foi possivel carregar os monitores.");
       }
 
-      const dados = await resposta.json();
+      const dados = await lerRespostaApi(resposta);
       setMonitores(dados);
     } catch (error) {
       setErro(error.message);
@@ -32,13 +33,13 @@ function LandingPage() {
   useEffect(() => {
     let componenteAtivo = true;
 
-    fetch("/api/monitores")
-      .then((resposta) => {
+    fetch(apiUrl("/api/monitores"))
+      .then(async (resposta) => {
         if (!resposta.ok) {
           throw new Error("Nao foi possivel carregar os monitores.");
         }
 
-        return resposta.json();
+        return lerRespostaApi(resposta);
       })
       .then((dados) => {
         if (componenteAtivo) {

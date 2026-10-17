@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../components/Header";
+import { apiUrl, lerRespostaApi } from "../../lib/api";
 import "./PerfilMonitor.css";
 
 function PerfilMonitor() {
@@ -43,8 +44,8 @@ function PerfilMonitor() {
     }
 
     Promise.all([
-      fetch(`/api/monitores/${id}`),
-      fetch(`/api/monitores/${id}/aulas`),
+      fetch(apiUrl(`/api/monitores/${id}`)),
+      fetch(apiUrl(`/api/monitores/${id}/aulas`)),
     ])
       .then(async ([respostaMonitor, respostaAulas]) => {
         if (!respostaMonitor.ok) {
@@ -55,7 +56,10 @@ function PerfilMonitor() {
           throw new Error("Nao foi possivel carregar as aulas.");
         }
 
-        return Promise.all([respostaMonitor.json(), respostaAulas.json()]);
+        return Promise.all([
+          lerRespostaApi(respostaMonitor),
+          lerRespostaApi(respostaAulas),
+        ]);
       })
       .then(([dadosMonitor, dadosAulas]) => {
         if (componenteAtivo) {
@@ -141,7 +145,7 @@ function PerfilMonitor() {
     try {
       setSalvandoAula(true);
 
-      const resposta = await fetch(`/api/monitores/${id}/aulas`, {
+      const resposta = await fetch(apiUrl(`/api/monitores/${id}/aulas`), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -156,7 +160,7 @@ function PerfilMonitor() {
         throw new Error("Nao foi possivel criar a aula.");
       }
 
-      const aulasAtualizadas = await resposta.json();
+      const aulasAtualizadas = await lerRespostaApi(resposta);
       setAulas(aulasAtualizadas);
       setHoraSelecionada("");
 

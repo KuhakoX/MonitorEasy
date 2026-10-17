@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
+import { apiUrl, lerRespostaApi } from "../../lib/api";
 import "./cadastro.css";
 
 const estadoInicial = {
@@ -63,7 +64,7 @@ function Cadastro() {
             senha: formulario.senha,
           };
 
-      const resposta = await fetch(endpoint, {
+      const resposta = await fetch(apiUrl(endpoint), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -71,7 +72,7 @@ function Cadastro() {
         body: JSON.stringify(dados),
       });
 
-      const resultado = await resposta.json();
+      const resultado = await lerRespostaApi(resposta);
 
       if (!resposta.ok) {
         throw new Error(resultado.error || "Nao foi possivel concluir.");

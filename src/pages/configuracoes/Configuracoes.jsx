@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
+import { apiUrl, lerRespostaApi } from "../../lib/api";
 import "./Configuracoes.css";
 
 function buscarUsuarioLogado() {
@@ -10,24 +11,6 @@ function buscarUsuarioLogado() {
     localStorage.removeItem("usuarioLogado");
     return null;
   }
-}
-
-async function lerRespostaApi(resposta) {
-  const tipoConteudo = resposta.headers.get("content-type") || "";
-
-  if (!tipoConteudo.includes("application/json")) {
-    if (resposta.status === 404) {
-      throw new Error(
-        "O backend ativo ainda nao reconhece as configuracoes. Reinicie a API com `npm run api` e atualize esta pagina.",
-      );
-    }
-
-    throw new Error(
-      `A API retornou uma resposta inesperada (HTTP ${resposta.status}). Verifique se o backend esta ativo.`,
-    );
-  }
-
-  return resposta.json();
 }
 
 function Configuracoes() {
@@ -65,7 +48,7 @@ function Configuracoes() {
 
     let componenteAtivo = true;
 
-    fetch(`/api/usuarios/${usuarioLogado.id}/configuracoes`)
+    fetch(apiUrl(`/api/usuarios/${usuarioLogado.id}/configuracoes`))
       .then(async (resposta) => {
         const dados = await lerRespostaApi(resposta);
 
@@ -161,7 +144,7 @@ function Configuracoes() {
       }
 
       const resposta = await fetch(
-        `/api/usuarios/${usuarioLogado.id}/configuracoes`,
+        apiUrl(`/api/usuarios/${usuarioLogado.id}/configuracoes`),
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -207,11 +190,14 @@ function Configuracoes() {
 
     try {
       setSalvandoSenha(true);
-      const resposta = await fetch(`/api/usuarios/${usuarioLogado.id}/senha`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ senhaAtual, novaSenha }),
-      });
+      const resposta = await fetch(
+        apiUrl(`/api/usuarios/${usuarioLogado.id}/senha`),
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ senhaAtual, novaSenha }),
+        },
+      );
       const resultado = await lerRespostaApi(resposta);
 
       if (!resposta.ok) {
