@@ -8,6 +8,25 @@ if (!connectionString) {
   throw new Error("DATABASE_URL nao foi definida para conectar ao Supabase.");
 }
 
+let databaseUrl;
+
+try {
+  databaseUrl = new URL(connectionString);
+} catch {
+  throw new Error(
+    "DATABASE_URL deve ser a URI PostgreSQL copiada em Supabase > Connect.",
+  );
+}
+
+if (
+  !["postgres:", "postgresql:"].includes(databaseUrl.protocol) ||
+  !databaseUrl.hostname
+) {
+  throw new Error(
+    "DATABASE_URL deve ser uma URI PostgreSQL (postgres:// ou postgresql://) de Supabase > Connect, nao a URL HTTPS do projeto.",
+  );
+}
+
 const poolConfig = {
   connectionString,
   max: process.env.VERCEL ? 1 : 5,

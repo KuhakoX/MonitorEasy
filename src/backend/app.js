@@ -1,6 +1,7 @@
 import "dotenv/config";
 import cors from "cors";
 import express from "express";
+import db from "./bd/db.js";
 import rotasUsuarios from "../routes/rotasUsuarios.js";
 
 const app = express();
@@ -36,8 +37,18 @@ app.use(
 );
 app.use(express.json());
 
-app.get("/api/health", (req, res) => {
-  res.json({ status: "ok" });
+app.get("/api/health", async (req, res) => {
+  try {
+    await db.query("SELECT 1");
+    return res.json({ status: "ok", database: "ok" });
+  } catch (error) {
+    console.error("Health check falhou ao conectar ao PostgreSQL:", error);
+    return res.status(503).json({
+      status: "error",
+      database: "unavailable",
+      error: "Banco indisponivel. Confira DATABASE_URL e a conexao do backend.",
+    });
+  }
 });
 
 app.use("/api", rotasUsuarios);

@@ -3,6 +3,35 @@ import { createClient } from "@supabase/supabase-js";
 const BUCKET_NAME = "monitor-materials";
 let clienteStorage;
 
+export function detalhesErroStorage(error) {
+  const status = error?.statusCode || error?.status;
+  const codigo = typeof error?.error === "string" ? error.error : "";
+  const mensagem =
+    typeof error?.message === "string" && error.message.trim()
+      ? error.message.trim()
+      : "Erro sem detalhes retornados pelo Supabase Storage.";
+  let detalhe = [
+    status ? `HTTP ${status}` : "",
+    codigo,
+    mensagem,
+  ]
+    .filter(Boolean)
+    .join(" - ");
+  const segredos = [
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    process.env.SUPABASE_URL,
+  ].filter(Boolean);
+
+  for (const segredo of segredos) {
+    detalhe = detalhe.split(segredo).join("[redigido]");
+  }
+
+  return detalhe
+    .replace(/Bearer\s+\S+/gi, "Bearer [redigido]")
+    .replace(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g, "[redigido]")
+    .slice(0, 400);
+}
+
 function getStorage() {
   if (clienteStorage) {
     return clienteStorage;

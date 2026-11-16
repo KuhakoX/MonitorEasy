@@ -54,6 +54,7 @@ function PerfilMonitor() {
   const location = useLocation();
   const hoje = new Date();
   const formularioMaterialRef = useRef(null);
+  const arquivoMaterialInputRef = useRef(null);
 
   const [monitor, setMonitor] = useState(null);
   const [usuarioAtual, setUsuarioAtual] = useState(null);
@@ -956,12 +957,33 @@ function PerfilMonitor() {
                         </label>
                         <input
                           id="arquivo-material"
+                          ref={arquivoMaterialInputRef}
                           type="file"
                           accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.txt,.rtf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.odp"
                           onChange={(event) =>
                             setArquivoMaterial(event.target.files?.[0] || null)
                           }
                         />
+                        {arquivoMaterial && (
+                          <div className="perfil-monitor-arquivo-selecionado">
+                            <span title={arquivoMaterial.name}>
+                              {arquivoMaterial.name}
+                            </span>
+                            <button
+                              type="button"
+                              aria-label={`Remover arquivo ${arquivoMaterial.name}`}
+                              title="Remover arquivo"
+                              onClick={() => {
+                                setArquivoMaterial(null);
+                                if (arquivoMaterialInputRef.current) {
+                                  arquivoMaterialInputRef.current.value = "";
+                                }
+                              }}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        )}
                         <small>
                           PDF, imagens, texto e documentos do Office/OpenDocument.
                         </small>

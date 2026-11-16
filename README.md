@@ -73,8 +73,9 @@ Na raiz do projeto, instale as dependências:
 npm install
 ```
 
-Crie `.env` a partir de `.env.example` e informe a connection string PostgreSQL
-do projeto Supabase em `DATABASE_URL`. Essa variável é exclusiva do backend:
+Crie `.env` e informe em `DATABASE_URL` a URI PostgreSQL copiada em
+**Supabase → Connect** (não use a URL HTTPS do projeto, que vai em
+`SUPABASE_URL`). Essa variável é exclusiva do backend:
 não a renomeie para `VITE_*` nem a exponha no frontend.
 
 ```env
@@ -177,21 +178,22 @@ própria avaliação e removê-la; o monitor pode remover avaliações do própr
 perfil.
 
 Se avisos sem arquivo forem publicados, mas a criação com arquivo falhar,
-consulte os logs da API: a resposta diferencia falha ao gravar os metadados no
-banco de falha ao gerar a URL de upload do Storage. No ambiente publicado,
+consulte a resposta e os logs da API: eles diferenciam falha ao gravar os
+metadados no banco de falha ao gerar a URL de upload do Storage. O detalhe do
+Storage omite a chave de serviço e a URL do projeto. No ambiente publicado,
 confirme `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` e a aplicação da migração
 que cria o bucket privado `monitor-materials`.
 
 ## Rotas do backend
 
-### Testar conexão com o banco
+### Testar API e conexão com o banco
 
 ```http
 GET /api/health
 ```
 
-Essa rota verifica se a API está em execução. A conexão com o banco é validada
-pelas operações que consultam o PostgreSQL.
+Essa rota verifica se a API está em execução e consegue consultar o PostgreSQL;
+retorna HTTP 503 quando a conexão com o banco está indisponível.
 
 ### Cadastro de usuário
 

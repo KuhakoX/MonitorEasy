@@ -28,6 +28,7 @@ import {
   baixarConteudoMaterial,
   criarUrlDownloadMaterial,
   criarUrlUploadMaterial,
+  detalhesErroStorage,
   materialExiste,
   removerArquivoMaterial,
 } from "../backend/storage.js";
@@ -666,16 +667,20 @@ export async function criarMaterialMonitor(req, res) {
         );
       }
 
-      console.error("Erro ao gerar URL assinada para upload de material:", error);
+      const detalheStorage = detalhesErroStorage(error);
+      console.error(
+        "Erro ao gerar URL assinada para upload de material:",
+        detalheStorage,
+      );
       const erroConfiguracao =
-        typeof error.message === "string" &&
+        typeof error?.message === "string" &&
         (error.message.includes("SUPABASE_URL") ||
           error.message.includes("SUPABASE_SERVICE_ROLE_KEY"));
 
       return res.status(502).json({
         error: erroConfiguracao
           ? error.message
-          : "Nao foi possivel preparar o upload no Supabase Storage. Verifique a configuracao do backend e o bucket privado monitor-materials; consulte os logs da API para o motivo.",
+          : `Nao foi possivel preparar o upload no Supabase Storage. Detalhe: ${detalheStorage}`,
       });
     }
   } catch (error) {
