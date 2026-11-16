@@ -8,12 +8,60 @@ import {
   getConfiguracoesUsuario,
   findUsuarioByEmail,
   getAllUsuarios,
+  createMonitorMaterial,
+  createMonitorReview,
+  deleteMonitorMaterialRecord,
+  deleteMonitorReview,
+  getMonitorMaterial,
+  getMonitorMaterialByProfile,
   getMonitorById,
   getMonitores,
+  listMonitorMaterials,
+  listMonitorReviews,
+  markMonitorMaterialUploaded,
+  updateMonitorReview,
   updateAulaMonitor,
   verifyPassword,
 } from "../models/usuarioModel.js";
 import { criarSessao, encerrarSessao } from "../backend/auth.js";
+import {
+  baixarConteudoMaterial,
+  criarUrlDownloadMaterial,
+  criarUrlUploadMaterial,
+  materialExiste,
+  removerArquivoMaterial,
+} from "../backend/storage.js";
+import {
+  TAMANHO_MAXIMO_MATERIAL,
+  validarAssinaturaArquivo,
+  validarConteudoMaterial,
+  validarDadosArquivo,
+} from "../backend/materialValidation.js";
+import { randomUUID } from "node:crypto";
+
+function materialPublico(material) {
+  const dadosPublicos = { ...material };
+  delete dadosPublicos.storagePath;
+  delete dadosPublicos.monitorId;
+  delete dadosPublicos.arquivoEnviado;
+  return dadosPublicos;
+}
+
+async function validarPerfilMonitor(req, res) {
+  if (!validarIdUsuario(req.params.id)) {
+    res.status(400).json({ error: "Monitor invalido." });
+    return false;
+  }
+
+  const monitor = await getMonitorById(req.params.id);
+
+  if (!monitor) {
+    res.status(404).json({ error: "Monitor nao encontrado." });
+    return false;
+  }
+
+  return true;
+}
 
 function validarMeetLink(valor) {
   if (typeof valor !== "string" || !valor.trim()) {
@@ -517,5 +565,367 @@ export async function excluirAulaMonitor(req, res) {
     console.error("Erro ao excluir aula:", error);
 
     return res.status(500).json({ error: "Erro interno no servidor." });
+  }
+}
+
+export async function listarMateriaisMonitor(req, res) {
+  try {
+    if (!(await validarPerfilMonitor(req, res))) {
+      return;
+    }
+
+    return res.status(200).json(await listMonitorMaterials(req.params.id));
+  } catch (error) {
+    console.error("Erro ao listar materiais do monitor:", error);
+
+    return res.status(500).json({ error: "Erro interno no servidor." });
+  }
+}
+
+export async function criarMaterialMonitor(req, res) {
+  let materialCriado;
+
+  try {
+    if (!(await verificarDonoDoPerfil(req, res))) {
+      return;
+    }
+
+    const {
+      titulo,
+      descricao = "",
+      fileName,
+      contentType,
+      fileSize,
+    } = req.body || {};
+
+    if (!validarConteudoMaterial(titulo, descricao)) {
+      return res.status(400).json({
+        error: "Informe um titulo e uma descricao validos (ate 2000 caracteres).",
+      });
+    }
+
+    const temArquivo =
+      fileName !== undefined || contentType !== undefined || fileSize !== undefined;
+    let nomeSeguro = null;
+
+    if (temArquivo) {
+      nomeSeguro = validarDadosArquivo({ fileName, contentType, fileSize });
+
+      if (!nomeSeguro) {
+        return res.status(400).json({
+          error:
+            "Arquivo invalido. Envie PDF, imagem ou documento permitido com ate 10 MB.",
+        });
+      }
+    } else if (!descricao.trim()) {
+      return res.status(400).json({
+        error: "Um aviso sem arquivo precisa de uma descricao.",
+      });
+    }
+
+    const storagePath = nomeSeguro
+      ? `${req.usuario.id}/${randomUUID()}-${nomeSeguro}`
+      : null;
+    materialCriado = await createMonitorMaterial(req.params.id, {
+      titulo: titulo.trim(),
+      descricao: descricao.trim(),
+      storagePath,
+      fileName: nomeSeguro,
+      contentType: nomeSeguro ? contentType : null,
+      fileSize: nomeSeguro ? fileSize : null,
+    });
+
+    if (!materialCriado) {
+      return res.status(404).json({ error: "Perfil de monitor nao encontrado." });
+    }
+
+    if (!storagePath) {
+      return res.status(201).json(materialPublico(materialCriado));
+    }
+
+    try {
+      const signedUrl = await criarUrlUploadMaterial(storagePath);
+      return res.status(201).json({
+        material: materialPublico(materialCriado),
+        signedUrl,
+      });
+    } catch (error) {
+      await deleteMonitorMaterialRecord(materialCriado.id, req.usuario.id);
+      throw error;
+    }
+  } catch (error) {
+    console.error("Erro ao criar material do monitor:", error);
+
+    return res.status(500).json({
+      error:
+        typeof error.message === "string" &&
+        (error.message.includes("SUPABASE_URL") ||
+          error.message.includes("SUPABASE_SERVICE_ROLE_KEY"))
+          ? error.message
+          : "Nao foi possivel criar o material.",
+    });
+  }
+}
+
+export async function confirmarMaterialMonitor(req, res) {
+  try {
+    if (!(await verificarDonoDoPerfil(req, res))) {
+      return;
+    }
+
+    if (!validarIdUsuario(req.params.materialId)) {
+      return res.status(400).json({ error: "Material invalido." });
+    }
+
+    const material = await getMonitorMaterial(
+      req.params.materialId,
+      req.usuario.id,
+    );
+
+    if (!material || !material.storagePath) {
+      return res.status(404).json({ error: "Material nao encontrado." });
+    }
+
+    if (!material.arquivoEnviado) {
+      if (!(await materialExiste(material.storagePath))) {
+        return res.status(400).json({ error: "O arquivo ainda nao foi enviado." });
+      }
+
+      const conteudo = await baixarConteudoMaterial(material.storagePath);
+
+      if (
+        conteudo.length !== Number(material.tamanhoBytes) ||
+        conteudo.length > TAMANHO_MAXIMO_MATERIAL ||
+        !validarAssinaturaArquivo(conteudo, material.contentType)
+      ) {
+        return res.status(400).json({
+          error: "O conteudo do arquivo nao corresponde ao tipo informado.",
+        });
+      }
+    }
+
+    const confirmado = await markMonitorMaterialUploaded(
+      req.params.materialId,
+      req.usuario.id,
+    );
+
+    if (!confirmado) {
+      return res.status(404).json({ error: "Material nao encontrado." });
+    }
+
+    return res.status(200).json(materialPublico(confirmado));
+  } catch (error) {
+    console.error("Erro ao confirmar arquivo do material:", error);
+
+    return res.status(500).json({ error: "Nao foi possivel confirmar o arquivo." });
+  }
+}
+
+export async function excluirMaterialMonitor(req, res) {
+  try {
+    if (!(await verificarDonoDoPerfil(req, res))) {
+      return;
+    }
+
+    if (!validarIdUsuario(req.params.materialId)) {
+      return res.status(400).json({ error: "Material invalido." });
+    }
+
+    const material = await getMonitorMaterial(
+      req.params.materialId,
+      req.usuario.id,
+    );
+
+    if (!material) {
+      return res.status(404).json({ error: "Material nao encontrado." });
+    }
+
+    if (
+      material.storagePath &&
+      (await materialExiste(material.storagePath))
+    ) {
+      await removerArquivoMaterial(material.storagePath);
+    }
+
+    const removido = await deleteMonitorMaterialRecord(
+      material.id,
+      req.usuario.id,
+    );
+
+    if (!removido) {
+      return res.status(404).json({ error: "Material nao encontrado." });
+    }
+
+    return res.status(200).json({ message: "Material removido." });
+  } catch (error) {
+    console.error("Erro ao excluir material do monitor:", error);
+
+    return res.status(500).json({ error: "Nao foi possivel remover o material." });
+  }
+}
+
+export async function baixarMaterialMonitor(req, res) {
+  try {
+    if (!(await validarPerfilMonitor(req, res))) {
+      return;
+    }
+
+    if (!validarIdUsuario(req.params.materialId)) {
+      return res.status(400).json({ error: "Material invalido." });
+    }
+
+    const material = await getMonitorMaterialByProfile(
+      req.params.materialId,
+      req.params.id,
+    );
+
+    if (!material || !material.storagePath) {
+      return res.status(404).json({ error: "Arquivo nao encontrado." });
+    }
+
+    const url = await criarUrlDownloadMaterial(material.storagePath);
+    return res.status(200).json({ url });
+  } catch (error) {
+    console.error("Erro ao preparar download de material:", error);
+
+    return res.status(500).json({ error: "Nao foi possivel acessar o arquivo." });
+  }
+}
+
+export async function listarAvaliacoesMonitor(req, res) {
+  try {
+    if (!(await validarPerfilMonitor(req, res))) {
+      return;
+    }
+
+    return res
+      .status(200)
+      .json(await listMonitorReviews(req.params.id, req.usuario.id));
+  } catch (error) {
+    console.error("Erro ao listar avaliacoes do monitor:", error);
+
+    return res.status(500).json({ error: "Erro interno no servidor." });
+  }
+}
+
+function validarAvaliacao(nota, comentario) {
+  return (
+    Number.isInteger(nota) &&
+    nota >= 1 &&
+    nota <= 5 &&
+    typeof comentario === "string" &&
+    comentario.length <= 2000
+  );
+}
+
+export async function criarAvaliacaoMonitor(req, res) {
+  try {
+    if (!(await validarPerfilMonitor(req, res))) {
+      return;
+    }
+
+    const { nota, comentario = "" } = req.body || {};
+
+    if (!validarAvaliacao(nota, comentario)) {
+      return res.status(400).json({
+        error: "A nota deve ser de 1 a 5 e o comentario ter ate 2000 caracteres.",
+      });
+    }
+
+    await createMonitorReview(
+      req.params.id,
+      req.usuario.id,
+      nota,
+      comentario.trim(),
+    );
+
+    return res
+      .status(201)
+      .json(await listMonitorReviews(req.params.id, req.usuario.id));
+  } catch (error) {
+    if (error.code === "23505") {
+      return res.status(409).json({
+        error: "Voce ja avaliou este monitor. Edite sua avaliacao existente.",
+      });
+    }
+
+    console.error("Erro ao criar avaliacao do monitor:", error);
+    return res.status(500).json({ error: "Nao foi possivel publicar a avaliacao." });
+  }
+}
+
+export async function editarAvaliacaoMonitor(req, res) {
+  try {
+    if (!(await validarPerfilMonitor(req, res))) {
+      return;
+    }
+
+    if (!validarIdUsuario(req.params.avaliacaoId)) {
+      return res.status(400).json({ error: "Avaliacao invalida." });
+    }
+
+    const { nota, comentario = "" } = req.body || {};
+
+    if (!validarAvaliacao(nota, comentario)) {
+      return res.status(400).json({
+        error: "A nota deve ser de 1 a 5 e o comentario ter ate 2000 caracteres.",
+      });
+    }
+
+    const atualizada = await updateMonitorReview(
+      req.params.avaliacaoId,
+      req.params.id,
+      req.usuario.id,
+      nota,
+      comentario.trim(),
+    );
+
+    if (!atualizada) {
+      return res.status(404).json({
+        error: "Avaliacao nao encontrada ou nao pertence a sua conta.",
+      });
+    }
+
+    return res
+      .status(200)
+      .json(await listMonitorReviews(req.params.id, req.usuario.id));
+  } catch (error) {
+    console.error("Erro ao editar avaliacao do monitor:", error);
+    return res.status(500).json({ error: "Nao foi possivel editar a avaliacao." });
+  }
+}
+
+export async function excluirAvaliacaoMonitor(req, res) {
+  try {
+    if (!(await validarPerfilMonitor(req, res))) {
+      return;
+    }
+
+    if (!validarIdUsuario(req.params.avaliacaoId)) {
+      return res.status(400).json({ error: "Avaliacao invalida." });
+    }
+
+    const moderador =
+      req.usuario.tipoUsuario.trim().toLowerCase() === "monitor" &&
+      Number(req.usuario.id) === Number(req.params.id);
+    const removida = await deleteMonitorReview(
+      req.params.avaliacaoId,
+      req.params.id,
+      req.usuario.id,
+      moderador,
+    );
+
+    if (!removida) {
+      return res.status(404).json({
+        error: "Avaliacao nao encontrada ou sem permissao para remove-la.",
+      });
+    }
+
+    return res
+      .status(200)
+      .json(await listMonitorReviews(req.params.id, req.usuario.id));
+  } catch (error) {
+    console.error("Erro ao excluir avaliacao do monitor:", error);
+    return res.status(500).json({ error: "Nao foi possivel remover a avaliacao." });
   }
 }

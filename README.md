@@ -22,9 +22,9 @@ O **Monitor Easy** é uma aplicação web desenvolvida em React com backend em N
 * Tela de cadastro de usuários
 * Tela de login
 * Configurações de conta específicas para alunos e monitores
-* Perfil do monitor
+* Perfil do monitor com materiais, avisos e avaliações
 * Exibição de nome, nota e matéria do monitor
-np* Calendário interativo para criar e editar aulas com título e descrição em um popup
+* Calendário interativo para criar e editar aulas com título e descrição em um popup
 * Popup com os detalhes da aula e botão para acessar o Google Meet
 * Integração com banco de dados PostgreSQL no Supabase
 
@@ -34,6 +34,9 @@ podem gerenciar as matérias ensinadas e o link do Google Meet. A troca de senha
 em `supabase/migrations`, e as senhas são armazenadas com hash.
 Cada aula tem título, descrição, data e horário; as descrições das aulas antigas
 ficam vazias após a migração.
+Materiais e avisos são privados para usuários autenticados. Os arquivos são
+armazenados no Supabase Storage; alunos e monitores podem avaliar perfis com
+nota de 1 a 5, e cada usuário tem uma avaliação por monitor.
 
 ## Estrutura do projeto
 
@@ -80,6 +83,8 @@ PORT=3001
 # Opcional, mas recomendado:
 SESSION_SECRET=
 FRONTEND_ORIGINS=http://localhost:5173
+SUPABASE_URL=https://SEU_PROJECT_REF.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=
 ```
 
 `SESSION_SECRET` assina os cookies de sessao. Se configurado, deve ser um valor
@@ -96,6 +101,9 @@ frontend e a API estiverem em hosts diferentes; por padrao, o desenvolvimento
 local usa `http://localhost:5173`. O cookie usa `SameSite=Lax` por padrao. Se
 frontend e API estiverem em sites diferentes, configure
 `SESSION_COOKIE_SAME_SITE=None` e use HTTPS.
+
+Preencha `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` com as credenciais do
+projeto Supabase somente no ambiente do backend para ativar uploads.
 
 ### Aplicar o esquema no Supabase
 
@@ -138,6 +146,11 @@ Configure no projeto Vercel as variáveis de ambiente do backend:
   painel **Connect** para o ambiente de execução.
 * `SUPABASE_CA_CERT`: conteúdo PEM do certificado CA oficial do Supabase,
   baixado em **Database → Settings → SSL Configuration**.
+* `SUPABASE_URL`: URL do projeto Supabase, disponível em **Project Settings →
+  API**.
+* `SUPABASE_SERVICE_ROLE_KEY`: chave de serviço do projeto, usada somente no
+  backend para criar URLs temporárias e gerenciar arquivos no bucket privado.
+  Nunca use essa chave em variáveis `VITE_*` nem a exponha no navegador.
 * `SESSION_SECRET` (recomendado): segredo aleatório de pelo menos 32 caracteres
   usado para assinar a sessão de login. Se omitido, a chave é derivada de
   `DATABASE_URL`.
@@ -147,6 +160,21 @@ Configure no projeto Vercel as variáveis de ambiente do backend:
 Não configure `DATABASE_URL` como variável `VITE_*`. Ela e o certificado são
 usados exclusivamente pela função Node.js. Após adicionar as funções e variáveis,
 faça um novo deploy na Vercel.
+
+### Materiais, avisos e avaliações
+
+A migração `20261116150000_add_monitor_materials_reviews.sql` cria as tabelas
+de materiais e avaliações e configura o bucket privado `monitor-materials`,
+com limite de 10 MB e tipos de arquivo permitidos. Aplique as migrações com
+`npx supabase db push` antes de usar esses recursos.
+
+Configure `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` no ambiente local do
+backend e nas variáveis do projeto Vercel. A chave de serviço não deve ser
+compartilhada nem publicada no frontend. Somente o monitor dono pode publicar
+ou remover materiais/avisos; todos os usuários autenticados podem visualizá-los.
+Usuários autenticados podem enviar uma avaliação de 1 a 5 por monitor, editar a
+própria avaliação e removê-la; o monitor pode remover avaliações do próprio
+perfil.
 
 ## Rotas do backend
 

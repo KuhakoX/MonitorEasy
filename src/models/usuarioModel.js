@@ -495,3 +495,302 @@ export async function deleteAulaMonitor(idAula, idUsuario) {
 
   return rows[0] || null;
 }
+
+export async function listMonitorMaterials(idUsuario) {
+  const idMonitor = await getMonitorAgendaId(idUsuario);
+
+  if (!idMonitor) {
+    return [];
+  }
+
+  const { rows } = await db.query(
+    `
+      SELECT
+        id_material AS id,
+        titulo,
+        descricao,
+        nome_arquivo AS "nomeArquivo",
+        content_type AS "contentType",
+        tamanho_bytes AS "tamanhoBytes",
+        criado_em AS "criadoEm"
+      FROM monitor_material
+      WHERE monitor_id = $1
+        AND arquivo_enviado = TRUE
+      ORDER BY criado_em DESC
+    `,
+    [idMonitor],
+  );
+
+  return rows;
+}
+
+export async function createMonitorMaterial(
+  idUsuario,
+  { titulo, descricao, storagePath, fileName, contentType, fileSize },
+) {
+  const idMonitor = await getMonitorAgendaId(idUsuario);
+
+  if (!idMonitor) {
+    return null;
+  }
+
+  const { rows } = await db.query(
+    `
+      INSERT INTO monitor_material (
+        monitor_id,
+        titulo,
+        descricao,
+        storage_path,
+        nome_arquivo,
+        content_type,
+        tamanho_bytes,
+        arquivo_enviado
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING
+        id_material AS id,
+        titulo,
+        descricao,
+        nome_arquivo AS "nomeArquivo",
+        content_type AS "contentType",
+        tamanho_bytes AS "tamanhoBytes",
+        criado_em AS "criadoEm"
+    `,
+    [
+      idMonitor,
+      titulo,
+      descricao,
+      storagePath,
+      fileName,
+      contentType,
+      fileSize,
+      !storagePath,
+    ],
+  );
+
+  return rows[0];
+}
+
+export async function markMonitorMaterialUploaded(idMaterial, idUsuario) {
+  const { rows } = await db.query(
+    `
+      UPDATE monitor_material mm
+      SET arquivo_enviado = TRUE
+      FROM monitor m
+      WHERE mm.id_material = $1
+        AND mm.monitor_id = m.id_monitor
+        AND m.usuario_id = $2
+        AND mm.storage_path IS NOT NULL
+      RETURNING
+        mm.id_material AS id,
+        mm.titulo,
+        mm.descricao,
+        mm.nome_arquivo AS "nomeArquivo",
+        mm.content_type AS "contentType",
+        mm.tamanho_bytes AS "tamanhoBytes",
+        mm.criado_em AS "criadoEm"
+    `,
+    [idMaterial, idUsuario],
+  );
+
+  return rows[0] || null;
+}
+
+export async function getMonitorMaterial(idMaterial, idUsuario) {
+  const { rows } = await db.query(
+    `
+      SELECT
+        mm.id_material AS id,
+        mm.monitor_id AS "monitorId",
+        mm.titulo,
+        mm.descricao,
+        mm.storage_path AS "storagePath",
+        mm.nome_arquivo AS "nomeArquivo",
+        mm.content_type AS "contentType",
+        mm.tamanho_bytes AS "tamanhoBytes",
+        mm.arquivo_enviado AS "arquivoEnviado"
+      FROM monitor_material mm
+      INNER JOIN monitor m ON m.id_monitor = mm.monitor_id
+      WHERE mm.id_material = $1
+        AND m.usuario_id = $2
+      LIMIT 1
+    `,
+    [idMaterial, idUsuario],
+  );
+
+  return rows[0] || null;
+}
+
+export async function getMonitorMaterialByProfile(idMaterial, idMonitorUsuario) {
+  const { rows } = await db.query(
+    `
+      SELECT
+        mm.id_material AS id,
+        mm.monitor_id AS "monitorId",
+        mm.titulo,
+        mm.descricao,
+        mm.storage_path AS "storagePath",
+        mm.nome_arquivo AS "nomeArquivo",
+        mm.content_type AS "contentType",
+        mm.tamanho_bytes AS "tamanhoBytes",
+        mm.arquivo_enviado AS "arquivoEnviado"
+      FROM monitor_material mm
+      INNER JOIN monitor m ON m.id_monitor = mm.monitor_id
+      WHERE mm.id_material = $1
+        AND m.usuario_id = $2
+        AND mm.arquivo_enviado = TRUE
+      LIMIT 1
+    `,
+    [idMaterial, idMonitorUsuario],
+  );
+
+  return rows[0] || null;
+}
+
+export async function deleteMonitorMaterialRecord(idMaterial, idUsuario) {
+  const { rows } = await db.query(
+    `
+      DELETE FROM monitor_material mm
+      USING monitor m
+      WHERE mm.id_material = $1
+        AND mm.monitor_id = m.id_monitor
+        AND m.usuario_id = $2
+      RETURNING mm.id_material AS id
+    `,
+    [idMaterial, idUsuario],
+  );
+
+  return rows[0] || null;
+}
+
+export async function listMonitorReviews(idUsuario, viewerId) {
+  const idMonitor = await getMonitorAgendaId(idUsuario);
+
+  if (!idMonitor) {
+    return { average: 0, count: 0, reviews: [], myReview: null };
+  }
+
+  const [{ rows: reviews }, { rows: aggregate }] = await Promise.all([
+    db.query(
+      `
+        SELECT
+          r.id_review AS id,
+          r.usuario_id AS "usuarioId",
+          u.nome AS "autor",
+          r.nota,
+          r.comentario,
+          r.criado_em AS "criadoEm",
+          r.atualizado_em AS "atualizadoEm"
+        FROM monitor_review r
+        INNER JOIN usuario u ON u.id_usuario = r.usuario_id
+        WHERE r.monitor_id = $1
+        ORDER BY r.criado_em DESC
+      `,
+      [idMonitor],
+    ),
+    db.query(
+      `
+        SELECT
+          COALESCE(ROUND(AVG(nota)::numeric, 2), 0) AS average,
+          COUNT(*)::integer AS count
+        FROM monitor_review
+        WHERE monitor_id = $1
+      `,
+      [idMonitor],
+    ),
+  ]);
+
+  const minhaAvaliacao =
+    reviews.find((review) => review.usuarioId === viewerId) || null;
+
+  return {
+    average: Number(aggregate[0].average),
+    count: aggregate[0].count,
+    reviews: reviews.map(({ usuarioId, ...review }) => ({
+      ...review,
+      minha: usuarioId === viewerId,
+    })),
+    myReview: minhaAvaliacao
+      ? {
+          id: minhaAvaliacao.id,
+          nota: minhaAvaliacao.nota,
+          comentario: minhaAvaliacao.comentario,
+          criadoEm: minhaAvaliacao.criadoEm,
+          atualizadoEm: minhaAvaliacao.atualizadoEm,
+        }
+      : null,
+  };
+}
+
+export async function createMonitorReview(
+  idMonitorUsuario,
+  idAutor,
+  nota,
+  comentario,
+) {
+  const idMonitor = await getMonitorAgendaId(idMonitorUsuario);
+
+  if (!idMonitor) {
+    return null;
+  }
+
+  const { rows } = await db.query(
+    `
+      INSERT INTO monitor_review (monitor_id, usuario_id, nota, comentario)
+      VALUES ($1, $2, $3, $4)
+      RETURNING id_review AS id
+    `,
+    [idMonitor, idAutor, nota, comentario],
+  );
+
+  return rows[0] || null;
+}
+
+export async function updateMonitorReview(
+  idReview,
+  idMonitorUsuario,
+  idAutor,
+  nota,
+  comentario,
+) {
+  const { rows } = await db.query(
+    `
+      UPDATE monitor_review r
+      SET
+        nota = $1,
+        comentario = $2,
+        atualizado_em = now()
+      FROM monitor m
+      WHERE r.id_review = $3
+        AND r.monitor_id = m.id_monitor
+        AND m.usuario_id = $4
+        AND r.usuario_id = $5
+      RETURNING r.id_review AS id
+    `,
+    [nota, comentario, idReview, idMonitorUsuario, idAutor],
+  );
+
+  return rows[0] || null;
+}
+
+export async function deleteMonitorReview(
+  idReview,
+  idMonitorUsuario,
+  idAutor,
+  moderador,
+) {
+  const { rows } = await db.query(
+    `
+      DELETE FROM monitor_review r
+      USING monitor m
+      WHERE r.id_review = $1
+        AND r.monitor_id = m.id_monitor
+        AND m.usuario_id = $2
+        AND (r.usuario_id = $3 OR $4::boolean)
+      RETURNING r.id_review AS id
+    `,
+    [idReview, idMonitorUsuario, idAutor, moderador],
+  );
+
+  return rows[0] || null;
+}

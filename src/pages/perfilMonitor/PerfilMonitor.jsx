@@ -1,14 +1,53 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Header from "../../components/Header";
 import { apiFetch, lerRespostaApi } from "../../lib/api";
 import "./PerfilMonitor.css";
+
+const TIPOS_ARQUIVO_POR_EXTENSAO = {
+  pdf: "application/pdf",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+  gif: "image/gif",
+  txt: "text/plain",
+  rtf: "application/rtf",
+  doc: "application/msword",
+  docx:
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  xls: "application/vnd.ms-excel",
+  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ppt: "application/vnd.ms-powerpoint",
+  pptx:
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  odt: "application/vnd.oasis.opendocument.text",
+  ods: "application/vnd.oasis.opendocument.spreadsheet",
+  odp: "application/vnd.oasis.opendocument.presentation",
+};
+
+function obterTipoArquivo(file) {
+  const extensao = file.name.split(".").pop()?.toLowerCase();
+  return TIPOS_ARQUIVO_POR_EXTENSAO[extensao] || file.type;
+}
+
+function formatarTamanhoArquivo(bytes) {
+  if (!Number.isFinite(Number(bytes))) {
+    return "";
+  }
+
+  const tamanho = Number(bytes);
+  return tamanho < 1024 * 1024
+    ? `${Math.max(1, Math.round(tamanho / 1024))} KB`
+    : `${(tamanho / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 function PerfilMonitor() {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const hoje = new Date();
+  const formularioMaterialRef = useRef(null);
 
   const [monitor, setMonitor] = useState(null);
   const [usuarioAtual, setUsuarioAtual] = useState(null);
@@ -20,6 +59,8 @@ function PerfilMonitor() {
   const [modalAulaAberto, setModalAulaAberto] = useState(false);
   const [aulaDetalhes, setAulaDetalhes] = useState(null);
   const [erro, setErro] = useState("");
+  const [erroMateriais, setErroMateriais] = useState("");
+  const [erroAvaliacoes, setErroAvaliacoes] = useState("");
   const [mesAtual, setMesAtual] = useState(hoje.getMonth());
   const [anoAtual, setAnoAtual] = useState(hoje.getFullYear());
   const [dataSelecionada, setDataSelecionada] = useState("");
@@ -27,6 +68,22 @@ function PerfilMonitor() {
   const [tituloAula, setTituloAula] = useState("");
   const [descricaoAula, setDescricaoAula] = useState("");
   const [aulas, setAulas] = useState([]);
+  const [materiais, setMateriais] = useState([]);
+  const [tituloMaterial, setTituloMaterial] = useState("");
+  const [descricaoMaterial, setDescricaoMaterial] = useState("");
+  const [arquivoMaterial, setArquivoMaterial] = useState(null);
+  const [salvandoMaterial, setSalvandoMaterial] = useState(false);
+  const [materialRemovendoId, setMaterialRemovendoId] = useState(null);
+  const [avaliacoes, setAvaliacoes] = useState({
+    average: 0,
+    count: 0,
+    reviews: [],
+    myReview: null,
+  });
+  const [notaAvaliacao, setNotaAvaliacao] = useState("5");
+  const [comentarioAvaliacao, setComentarioAvaliacao] = useState("");
+  const [salvandoAvaliacao, setSalvandoAvaliacao] = useState(false);
+  const [removendoAvaliacaoId, setRemovendoAvaliacaoId] = useState(null);
 
   const meses = [
     "Janeiro",
@@ -78,30 +135,66 @@ function PerfilMonitor() {
           setMonitor(dadosMonitor);
           setUsuarioAtual(usuario);
           setAulas([]);
+          setMateriais([]);
+          setAvaliacoes({
+            average: 0,
+            count: 0,
+            reviews: [],
+            myReview: null,
+          });
           setErro("");
+          setErroMateriais("");
+          setErroAvaliacoes("");
         }
 
         if (usuario) {
-          const respostaAulas = await apiFetch(`/api/monitores/${id}/aulas`);
+          const secoes = [
+            {
+              caminho: `/api/monitores/${id}/aulas`,
+              salvar: setAulas,
+              erro: setErro,
+              erroPadrao: "Nao foi possivel carregar as aulas.",
+            },
+            {
+              caminho: `/api/monitores/${id}/materiais`,
+              salvar: setMateriais,
+              erro: setErroMateriais,
+              erroPadrao: "Nao foi possivel carregar os materiais.",
+            },
+            {
+              caminho: `/api/monitores/${id}/avaliacoes`,
+              salvar: (dados) => {
+                setAvaliacoes(dados);
+                if (dados.myReview) {
+                  setNotaAvaliacao(String(dados.myReview.nota));
+                  setComentarioAvaliacao(dados.myReview.comentario);
+                }
+              },
+              erro: setErroAvaliacoes,
+              erroPadrao: "Nao foi possivel carregar as avaliacoes.",
+            },
+          ];
 
-          if (respostaAulas.status === 401) {
-            if (componenteAtivo) {
-              setUsuarioAtual(null);
-              setAulas([]);
-            }
-            return;
-          }
+          await Promise.all(
+            secoes.map(async (secao) => {
+              try {
+                const resposta = await apiFetch(secao.caminho);
+                const dados = await lerRespostaApi(resposta);
 
-          if (!respostaAulas.ok) {
-            const resultado = await lerRespostaApi(respostaAulas);
-            throw new Error(resultado.error || "Nao foi possivel carregar as aulas.");
-          }
+                if (!resposta.ok) {
+                  throw new Error(dados.error || secao.erroPadrao);
+                }
 
-          const dadosAulas = await lerRespostaApi(respostaAulas);
-
-          if (componenteAtivo) {
-            setAulas(dadosAulas);
-          }
+                if (componenteAtivo) {
+                  secao.salvar(dados);
+                }
+              } catch (error) {
+                if (componenteAtivo) {
+                  secao.erro(error.message || secao.erroPadrao);
+                }
+              }
+            }),
+          );
         }
       } catch (error) {
         if (componenteAtivo) {
@@ -319,6 +412,239 @@ function PerfilMonitor() {
     }
   }
 
+  async function publicarMaterial(event) {
+    event.preventDefault();
+    setErroMateriais("");
+
+    if (!tituloMaterial.trim() || (!arquivoMaterial && !descricaoMaterial.trim())) {
+      setErroMateriais("Informe um titulo e uma descricao ou selecione um arquivo.");
+      return;
+    }
+
+    let materialId;
+
+    try {
+      setSalvandoMaterial(true);
+
+      const metadata = {
+        titulo: tituloMaterial,
+        descricao: descricaoMaterial,
+      };
+
+      if (arquivoMaterial) {
+        const contentType = obterTipoArquivo(arquivoMaterial);
+
+        if (
+          !contentType ||
+          arquivoMaterial.size <= 0 ||
+          arquivoMaterial.size > 10 * 1024 * 1024
+        ) {
+          throw new Error("Escolha um formato permitido com ate 10 MB.");
+        }
+
+        metadata.fileName = arquivoMaterial.name;
+        metadata.contentType = contentType;
+        metadata.fileSize = arquivoMaterial.size;
+      }
+
+      const resposta = await apiFetch(`/api/monitores/${id}/materiais`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(metadata),
+      });
+      const resultado = await lerRespostaApi(resposta);
+
+      if (!resposta.ok) {
+        throw new Error(resultado.error || "Nao foi possivel publicar.");
+      }
+
+      const material = resultado.material || resultado;
+      materialId = material.id;
+
+      if (arquivoMaterial) {
+        const upload = await fetch(resultado.signedUrl, {
+          method: "PUT",
+          headers: { "Content-Type": obterTipoArquivo(arquivoMaterial) },
+          body: arquivoMaterial,
+        });
+
+        if (!upload.ok) {
+          throw new Error("O envio do arquivo falhou. Tente novamente.");
+        }
+
+        const respostaConfirmacao = await apiFetch(
+          `/api/monitores/${id}/materiais/${materialId}/confirm`,
+          { method: "POST" },
+        );
+        const materialConfirmado = await lerRespostaApi(respostaConfirmacao);
+
+        if (!respostaConfirmacao.ok) {
+          throw new Error(
+            materialConfirmado.error || "Nao foi possivel confirmar o arquivo.",
+          );
+        }
+
+        setMateriais((atuais) => [materialConfirmado, ...atuais]);
+      } else {
+        setMateriais((atuais) => [material, ...atuais]);
+      }
+
+      setTituloMaterial("");
+      setDescricaoMaterial("");
+      setArquivoMaterial(null);
+      formularioMaterialRef.current?.reset();
+    } catch (error) {
+      if (materialId) {
+        let erroLimpeza;
+
+        try {
+          const respostaLimpeza = await apiFetch(
+            `/api/monitores/${id}/materiais/${materialId}`,
+            { method: "DELETE" },
+          );
+          const resultadoLimpeza = await lerRespostaApi(respostaLimpeza);
+
+          if (!respostaLimpeza.ok) {
+            erroLimpeza =
+              resultadoLimpeza.error ||
+              "Nao foi possivel limpar o upload pendente.";
+          }
+        } catch (erro) {
+          erroLimpeza = erro.message;
+        }
+
+        if (erroLimpeza) {
+          setErroMateriais(
+            `${error.message} Tambem nao foi possivel remover o arquivo pendente: ${erroLimpeza}`,
+          );
+          return;
+        }
+      }
+
+      setErroMateriais(error.message);
+    } finally {
+      setSalvandoMaterial(false);
+    }
+  }
+
+  async function removerMaterial(material) {
+    if (!window.confirm("Deseja remover esta publicacao?")) {
+      return;
+    }
+
+    try {
+      setMaterialRemovendoId(material.id);
+      setErroMateriais("");
+      const resposta = await apiFetch(
+        `/api/monitores/${id}/materiais/${material.id}`,
+        { method: "DELETE" },
+      );
+      const resultado = await lerRespostaApi(resposta);
+
+      if (!resposta.ok) {
+        throw new Error(resultado.error || "Nao foi possivel remover.");
+      }
+
+      setMateriais((atuais) =>
+        atuais.filter((item) => item.id !== material.id),
+      );
+    } catch (error) {
+      setErroMateriais(error.message);
+    } finally {
+      setMaterialRemovendoId(null);
+    }
+  }
+
+  async function baixarMaterial(material) {
+    const janela = window.open("about:blank", "_blank");
+
+    try {
+      const resposta = await apiFetch(
+        `/api/monitores/${id}/materiais/${material.id}/download`,
+      );
+      const resultado = await lerRespostaApi(resposta);
+
+      if (!resposta.ok) {
+        throw new Error(resultado.error || "Nao foi possivel abrir o arquivo.");
+      }
+
+      if (janela) {
+        janela.opener = null;
+        janela.location = resultado.url;
+      } else {
+        window.location.assign(resultado.url);
+      }
+    } catch (error) {
+      if (janela) {
+        janela.close();
+      }
+
+      setErroMateriais(error.message);
+    }
+  }
+
+  async function enviarAvaliacao(event) {
+    event.preventDefault();
+    setErroAvaliacoes("");
+
+    try {
+      setSalvandoAvaliacao(true);
+      const minhaAvaliacao = avaliacoes.myReview;
+      const caminho = `/api/monitores/${id}/avaliacoes${
+        minhaAvaliacao ? `/${minhaAvaliacao.id}` : ""
+      }`;
+      const resposta = await apiFetch(caminho, {
+        method: minhaAvaliacao ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nota: Number(notaAvaliacao),
+          comentario: comentarioAvaliacao,
+        }),
+      });
+      const resultado = await lerRespostaApi(resposta);
+
+      if (!resposta.ok) {
+        throw new Error(resultado.error || "Nao foi possivel salvar a avaliacao.");
+      }
+
+      setAvaliacoes(resultado);
+      setNotaAvaliacao(String(resultado.myReview?.nota || 5));
+      setComentarioAvaliacao(resultado.myReview?.comentario || "");
+    } catch (error) {
+      setErroAvaliacoes(error.message);
+    } finally {
+      setSalvandoAvaliacao(false);
+    }
+  }
+
+  async function removerAvaliacao(avaliacao) {
+    if (!window.confirm("Deseja remover esta avaliacao?")) {
+      return;
+    }
+
+    try {
+      setRemovendoAvaliacaoId(avaliacao.id);
+      setErroAvaliacoes("");
+      const resposta = await apiFetch(
+        `/api/monitores/${id}/avaliacoes/${avaliacao.id}`,
+        { method: "DELETE" },
+      );
+      const resultado = await lerRespostaApi(resposta);
+
+      if (!resposta.ok) {
+        throw new Error(resultado.error || "Nao foi possivel remover.");
+      }
+
+      setAvaliacoes(resultado);
+      setNotaAvaliacao(String(resultado.myReview?.nota || 5));
+      setComentarioAvaliacao(resultado.myReview?.comentario || "");
+    } catch (error) {
+      setErroAvaliacoes(error.message);
+    } finally {
+      setRemovendoAvaliacaoId(null);
+    }
+  }
+
   function buscarAulasDoDia(data) {
     return aulas.filter((aula) => aula.data === data);
   }
@@ -362,7 +688,12 @@ function PerfilMonitor() {
                 <p>{monitor.descricao}</p>
 
                 <div className="perfil-monitor-details">
-                  <span>Nota: {monitor.avaliacao}</span>
+                  <span>
+                    Nota:{" "}
+                    {avaliacoes.count
+                      ? `${avaliacoes.average.toFixed(2)} / 5`
+                      : "Sem avaliacoes"}
+                  </span>
                   <span>Materia: {monitor.materia}</span>
                 </div>
               </div>
@@ -496,6 +827,270 @@ function PerfilMonitor() {
                       );
                     })}
                   </div>
+                </div>
+              </section>
+            )}
+
+            {usuarioAtual && (
+              <section className="perfil-monitor-comunidade">
+                <div className="perfil-monitor-conteudo-card">
+                  <div className="perfil-monitor-conteudo-heading">
+                    <div>
+                      <h2>Materiais e avisos</h2>
+                      <p>
+                        Arquivos e comunicados publicados pelo monitor.
+                      </p>
+                    </div>
+                  </div>
+
+                  {ehDonoDoPerfil && (
+                    <form
+                      ref={formularioMaterialRef}
+                      className="perfil-monitor-material-form"
+                      onSubmit={publicarMaterial}
+                    >
+                      <div className="perfil-monitor-modal-campo">
+                        <label htmlFor="titulo-material">Titulo</label>
+                        <input
+                          id="titulo-material"
+                          type="text"
+                          value={tituloMaterial}
+                          onChange={(event) =>
+                            setTituloMaterial(event.target.value)
+                          }
+                          maxLength={200}
+                          required
+                        />
+                      </div>
+
+                      <div className="perfil-monitor-modal-campo">
+                        <label htmlFor="descricao-material">
+                          Descricao ou aviso
+                        </label>
+                        <textarea
+                          id="descricao-material"
+                          value={descricaoMaterial}
+                          onChange={(event) =>
+                            setDescricaoMaterial(event.target.value)
+                          }
+                          maxLength={2000}
+                          rows={3}
+                        />
+                      </div>
+
+                      <div className="perfil-monitor-modal-campo">
+                        <label htmlFor="arquivo-material">
+                          Arquivo (opcional, maximo 10 MB)
+                        </label>
+                        <input
+                          id="arquivo-material"
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.txt,.rtf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.odp"
+                          onChange={(event) =>
+                            setArquivoMaterial(event.target.files?.[0] || null)
+                          }
+                        />
+                        <small>
+                          PDF, imagens, texto e documentos do Office/OpenDocument.
+                        </small>
+                      </div>
+
+                      {erroMateriais && (
+                        <p className="perfil-monitor-inline-error" role="alert">
+                          {erroMateriais}
+                        </p>
+                      )}
+
+                      <button
+                        type="submit"
+                        className="perfil-monitor-create-button"
+                        disabled={salvandoMaterial}
+                      >
+                        {salvandoMaterial
+                          ? "Publicando..."
+                          : arquivoMaterial
+                            ? "Publicar material"
+                            : "Publicar aviso"}
+                      </button>
+                    </form>
+                  )}
+
+                  {!ehDonoDoPerfil && erroMateriais && (
+                    <p className="perfil-monitor-inline-error" role="alert">
+                      {erroMateriais}
+                    </p>
+                  )}
+
+                  {materiais.length === 0 && !erroMateriais && (
+                    <p className="perfil-monitor-conteudo-vazio">
+                      Nenhum material ou aviso publicado ainda.
+                    </p>
+                  )}
+
+                  {materiais.length > 0 && (
+                    <ul className="perfil-monitor-materiais-lista">
+                      {materiais.map((material) => (
+                        <li
+                          className="perfil-monitor-material-item"
+                          key={material.id}
+                        >
+                          <div>
+                            <h3>{material.titulo}</h3>
+                            {material.descricao && (
+                              <p>{material.descricao}</p>
+                            )}
+                            {material.nomeArquivo && (
+                              <small>
+                                {material.nomeArquivo}
+                                {material.tamanhoBytes
+                                  ? ` · ${formatarTamanhoArquivo(material.tamanhoBytes)}`
+                                  : ""}
+                              </small>
+                            )}
+                            <time dateTime={material.criadoEm}>
+                              {new Date(material.criadoEm).toLocaleDateString(
+                                "pt-BR",
+                              )}
+                            </time>
+                          </div>
+                          <div className="perfil-monitor-material-acoes">
+                            {material.nomeArquivo && (
+                              <button
+                                type="button"
+                                onClick={() => baixarMaterial(material)}
+                              >
+                                Abrir arquivo
+                              </button>
+                            )}
+                            {ehDonoDoPerfil && (
+                              <button
+                                type="button"
+                                disabled={materialRemovendoId === material.id}
+                                onClick={() => removerMaterial(material)}
+                              >
+                                {materialRemovendoId === material.id
+                                  ? "Removendo..."
+                                  : "Remover"}
+                              </button>
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                <div className="perfil-monitor-conteudo-card">
+                  <div className="perfil-monitor-conteudo-heading">
+                    <div>
+                      <h2>Avaliacoes e comentarios</h2>
+                      <p>
+                        Nota media:{" "}
+                        {avaliacoes.count
+                          ? `${avaliacoes.average.toFixed(2)} / 5 (${avaliacoes.count})`
+                          : "Sem avaliacoes"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <form
+                    className="perfil-monitor-avaliacao-form"
+                    onSubmit={enviarAvaliacao}
+                  >
+                    <div className="perfil-monitor-modal-campo">
+                      <label htmlFor="nota-avaliacao">Sua nota</label>
+                      <select
+                        id="nota-avaliacao"
+                        value={notaAvaliacao}
+                        onChange={(event) =>
+                          setNotaAvaliacao(event.target.value)
+                        }
+                      >
+                        <option value="5">5 - Excelente</option>
+                        <option value="4">4 - Muito bom</option>
+                        <option value="3">3 - Bom</option>
+                        <option value="2">2 - Regular</option>
+                        <option value="1">1 - Ruim</option>
+                      </select>
+                    </div>
+                    <div className="perfil-monitor-modal-campo">
+                      <label htmlFor="comentario-avaliacao">
+                        Comentario (opcional)
+                      </label>
+                      <textarea
+                        id="comentario-avaliacao"
+                        value={comentarioAvaliacao}
+                        onChange={(event) =>
+                          setComentarioAvaliacao(event.target.value)
+                        }
+                        maxLength={2000}
+                        rows={3}
+                      />
+                    </div>
+
+                    {erroAvaliacoes && (
+                      <p className="perfil-monitor-inline-error" role="alert">
+                        {erroAvaliacoes}
+                      </p>
+                    )}
+
+                    <button
+                      type="submit"
+                      className="perfil-monitor-create-button"
+                      disabled={salvandoAvaliacao}
+                    >
+                      {salvandoAvaliacao
+                        ? "Salvando..."
+                        : avaliacoes.myReview
+                          ? "Atualizar minha avaliacao"
+                          : "Enviar avaliacao"}
+                    </button>
+                  </form>
+
+                  {avaliacoes.reviews.length === 0 && !erroAvaliacoes && (
+                    <p className="perfil-monitor-conteudo-vazio">
+                      Ainda nao ha comentarios para este perfil.
+                    </p>
+                  )}
+
+                  {avaliacoes.reviews.length > 0 && (
+                    <ul className="perfil-monitor-avaliacoes-lista">
+                      {avaliacoes.reviews.map((avaliacao) => (
+                        <li
+                          className="perfil-monitor-avaliacao-item"
+                          key={avaliacao.id}
+                        >
+                          <div className="perfil-monitor-avaliacao-heading">
+                            <strong>{avaliacao.autor}</strong>
+                            <span>{avaliacao.nota} / 5</span>
+                          </div>
+                          <time dateTime={avaliacao.criadoEm}>
+                            {new Date(avaliacao.criadoEm).toLocaleDateString(
+                              "pt-BR",
+                            )}
+                          </time>
+                          <p>
+                            {avaliacao.comentario || "Avaliacao sem comentario."}
+                          </p>
+                          {(avaliacao.minha || ehDonoDoPerfil) && (
+                            <div className="perfil-monitor-avaliacao-acoes">
+                              <button
+                                type="button"
+                                disabled={
+                                  removendoAvaliacaoId === avaliacao.id
+                                }
+                                onClick={() => removerAvaliacao(avaliacao)}
+                              >
+                                {removendoAvaliacaoId === avaliacao.id
+                                  ? "Removendo..."
+                                  : "Remover"}
+                              </button>
+                            </div>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </section>
             )}
