@@ -349,7 +349,11 @@ const monitorSelect = `
       legado.assunto,
       'Monitor cadastrado na plataforma.'
     ) AS descricao,
-    m.nota AS avaliacao,
+    (
+      SELECT ROUND(AVG(r.nota)::numeric, 2)
+      FROM monitor_review r
+      WHERE r.monitor_id = m.id_monitor
+    ) AS avaliacao,
     COALESCE(c.meet_link, m.meet_link) AS "meetLink",
     COALESCE(
       (

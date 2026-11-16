@@ -176,6 +176,12 @@ Usuários autenticados podem enviar uma avaliação de 1 a 5 por monitor, editar
 própria avaliação e removê-la; o monitor pode remover avaliações do próprio
 perfil.
 
+Se avisos sem arquivo forem publicados, mas a criação com arquivo falhar,
+consulte os logs da API: a resposta diferencia falha ao gravar os metadados no
+banco de falha ao gerar a URL de upload do Storage. No ambiente publicado,
+confirme `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` e a aplicação da migração
+que cria o bucket privado `monitor-materials`.
+
 ## Rotas do backend
 
 ### Testar conexão com o banco

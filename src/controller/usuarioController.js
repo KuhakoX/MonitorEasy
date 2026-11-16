@@ -626,14 +626,21 @@ export async function criarMaterialMonitor(req, res) {
     const storagePath = nomeSeguro
       ? `${req.usuario.id}/${randomUUID()}-${nomeSeguro}`
       : null;
-    materialCriado = await createMonitorMaterial(req.params.id, {
-      titulo: titulo.trim(),
-      descricao: descricao.trim(),
-      storagePath,
-      fileName: nomeSeguro,
-      contentType: nomeSeguro ? contentType : null,
-      fileSize: nomeSeguro ? fileSize : null,
-    });
+    try {
+      materialCriado = await createMonitorMaterial(req.params.id, {
+        titulo: titulo.trim(),
+        descricao: descricao.trim(),
+        storagePath,
+        fileName: nomeSeguro,
+        contentType: nomeSeguro ? contentType : null,
+        fileSize: nomeSeguro ? fileSize : null,
+      });
+    } catch (error) {
+      console.error("Erro ao registrar metadados do material:", error);
+      return res.status(500).json({
+        error: "Nao foi possivel registrar o material no banco de dados.",
+      });
+    }
 
     if (!materialCriado) {
       return res.status(404).json({ error: "Perfil de monitor nao encontrado." });
@@ -650,8 +657,26 @@ export async function criarMaterialMonitor(req, res) {
         signedUrl,
       });
     } catch (error) {
-      await deleteMonitorMaterialRecord(materialCriado.id, req.usuario.id);
-      throw error;
+      try {
+        await deleteMonitorMaterialRecord(materialCriado.id, req.usuario.id);
+      } catch (cleanupError) {
+        console.error(
+          "Erro ao remover metadados apos falha ao preparar o upload:",
+          cleanupError,
+        );
+      }
+
+      console.error("Erro ao gerar URL assinada para upload de material:", error);
+      const erroConfiguracao =
+        typeof error.message === "string" &&
+        (error.message.includes("SUPABASE_URL") ||
+          error.message.includes("SUPABASE_SERVICE_ROLE_KEY"));
+
+      return res.status(502).json({
+        error: erroConfiguracao
+          ? error.message
+          : "Nao foi possivel preparar o upload no Supabase Storage. Verifique a configuracao do backend e o bucket privado monitor-materials; consulte os logs da API para o motivo.",
+      });
     }
   } catch (error) {
     console.error("Erro ao criar material do monitor:", error);
