@@ -3,15 +3,38 @@ import { getUsuarioAutenticado } from "../models/usuarioModel.js";
 
 const COOKIE_NAME = "monitoreasy_session";
 const SESSION_DURATION_SECONDS = 60 * 60 * 8;
+let chaveSessao;
 
 function getSessionSecret() {
-  const secret = process.env.SESSION_SECRET;
-
-  if (!secret || secret.length < 32) {
-    throw new Error("SESSION_SECRET deve ter pelo menos 32 caracteres.");
+  if (chaveSessao) {
+    return chaveSessao;
   }
 
-  return secret;
+  const secretConfigurado = process.env.SESSION_SECRET;
+
+  if (secretConfigurado) {
+    if (secretConfigurado.length < 32) {
+      throw new Error("SESSION_SECRET deve ter pelo menos 32 caracteres.");
+    }
+
+    chaveSessao = secretConfigurado;
+    return chaveSessao;
+  }
+
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    throw new Error("Defina SESSION_SECRET ou DATABASE_URL para assinar a sessao.");
+  }
+
+  console.warn(
+    "SESSION_SECRET nao definida; usando uma chave derivada de DATABASE_URL. Configure SESSION_SECRET para maior isolamento.",
+  );
+  chaveSessao = createHmac("sha256", databaseUrl)
+    .update("MonitorEasy session signing key v1")
+    .digest("base64url");
+
+  return chaveSessao;
 }
 
 function assinar(payload) {

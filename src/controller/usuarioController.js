@@ -270,8 +270,23 @@ export async function loginUsuario(req, res) {
   } catch (error) {
     console.error("Erro ao fazer login:", error);
 
+    let mensagemErro = "Erro interno no servidor.";
+
+    if (
+      error.message === "SESSION_SECRET deve ter pelo menos 32 caracteres." ||
+      error.message === "Defina SESSION_SECRET ou DATABASE_URL para assinar a sessao."
+    ) {
+      mensagemErro =
+        "A sessao de login nao esta configurada. Defina SESSION_SECRET com pelo menos 32 caracteres.";
+    } else if (
+      error.message === "SESSION_COOKIE_SAME_SITE deve ser Lax, Strict ou None."
+    ) {
+      mensagemErro =
+        "A configuracao SESSION_COOKIE_SAME_SITE deve ser Lax, Strict ou None.";
+    }
+
     return res.status(500).json({
-      error: "Erro interno no servidor.",
+      error: mensagemErro,
     });
   }
 }

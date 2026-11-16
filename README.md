@@ -75,17 +75,25 @@ não a renomeie para `VITE_*` nem a exponha no frontend.
 ```env
 DATABASE_URL=postgresql://...
 PORT=3001
-SESSION_SECRET=<segredo-aleatorio-de-pelo-menos-32-caracteres>
+# Opcional, mas recomendado:
+SESSION_SECRET=
 FRONTEND_ORIGINS=http://localhost:5173
 ```
 
-`SESSION_SECRET` assina os cookies de sessao e deve ser um valor aleatorio com
-pelo menos 32 caracteres. Mantenha-o somente no ambiente do backend e use um
-valor diferente em cada ambiente. `FRONTEND_ORIGINS` aceita uma lista de
-origens separadas por virgula quando o frontend e a API estiverem em hosts
-diferentes; por padrao, o desenvolvimento local usa `http://localhost:5173`.
-O cookie usa `SameSite=Lax` por padrao. Se frontend e API estiverem em sites
-diferentes, configure `SESSION_COOKIE_SAME_SITE=None` e use HTTPS.
+`SESSION_SECRET` assina os cookies de sessao. Se configurado, deve ser um valor
+aleatorio com pelo menos 32 caracteres, mantido somente no ambiente do backend
+e diferente em cada ambiente. Se estiver ausente, o servidor deriva a chave de
+`DATABASE_URL` para manter compatibilidade com deploys existentes; configure
+um segredo dedicado para isolar a sessao das credenciais do banco. Gere-o
+localmente com `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+e cadastre-o no `.env` local ou nas variaveis do provedor de deploy; nao
+compartilhe nem versione esse valor.
+
+`FRONTEND_ORIGINS` aceita uma lista de origens separadas por virgula quando o
+frontend e a API estiverem em hosts diferentes; por padrao, o desenvolvimento
+local usa `http://localhost:5173`. O cookie usa `SameSite=Lax` por padrao. Se
+frontend e API estiverem em sites diferentes, configure
+`SESSION_COOKIE_SAME_SITE=None` e use HTTPS.
 
 ### Aplicar o esquema no Supabase
 
@@ -128,8 +136,9 @@ Configure no projeto Vercel as variáveis de ambiente do backend:
   painel **Connect** para o ambiente de execução.
 * `SUPABASE_CA_CERT`: conteúdo PEM do certificado CA oficial do Supabase,
   baixado em **Database → Settings → SSL Configuration**.
-* `SESSION_SECRET`: segredo aleatório de pelo menos 32 caracteres usado para
-  assinar a sessão de login.
+* `SESSION_SECRET` (recomendado): segredo aleatório de pelo menos 32 caracteres
+  usado para assinar a sessão de login. Se omitido, a chave é derivada de
+  `DATABASE_URL`.
 * `FRONTEND_ORIGINS`: origens do frontend autorizadas quando ele não estiver no
   mesmo host da API.
 
