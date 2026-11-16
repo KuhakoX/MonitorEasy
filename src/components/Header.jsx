@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { apiFetch, lerRespostaApi } from "../lib/api";
 import icone from "../assets/icone.png";
 import "./Header.css";
 
@@ -36,7 +37,19 @@ function Header() {
     };
   }, []);
 
-  function fazerLogout() {
+  async function fazerLogout() {
+    try {
+      const resposta = await apiFetch("/api/logout", { method: "POST" });
+      const resultado = await lerRespostaApi(resposta);
+
+      if (!resposta.ok) {
+        throw new Error(resultado.error || "Nao foi possivel encerrar a sessao.");
+      }
+    } catch (error) {
+      window.alert(error.message);
+      return;
+    }
+
     localStorage.removeItem("usuarioLogado");
     setUsuarioLogado(null);
     setMenuAberto(false);

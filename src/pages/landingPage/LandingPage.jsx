@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
-import { apiUrl, lerRespostaApi } from "../../lib/api";
+import { apiFetch, lerRespostaApi } from "../../lib/api";
 import "./LandingPage.css";
 
 function LandingPage() {
@@ -15,7 +15,7 @@ function LandingPage() {
       setCarregando(true);
       setErro("");
 
-      const resposta = await fetch(apiUrl("/api/monitores"));
+      const resposta = await apiFetch("/api/monitores");
 
       if (!resposta.ok) {
         throw new Error("Nao foi possivel carregar os monitores.");
@@ -33,7 +33,7 @@ function LandingPage() {
   useEffect(() => {
     let componenteAtivo = true;
 
-    fetch(apiUrl("/api/monitores"))
+    apiFetch("/api/monitores")
       .then(async (resposta) => {
         if (!resposta.ok) {
           throw new Error("Nao foi possivel carregar os monitores.");

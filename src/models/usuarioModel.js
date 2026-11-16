@@ -118,6 +118,24 @@ export async function findUsuarioByEmail(email) {
   return rows[0];
 }
 
+export async function getUsuarioAutenticado(idUsuario) {
+  const { rows } = await db.query(
+    `
+      SELECT
+        id_usuario AS id,
+        nome,
+        email,
+        tipo_usuario AS "tipoUsuario"
+      FROM usuario
+      WHERE id_usuario = $1
+      LIMIT 1
+    `,
+    [idUsuario],
+  );
+
+  return rows[0];
+}
+
 export async function getAllUsuarios() {
   const { rows } = await db.query(
     `
@@ -421,4 +439,37 @@ export async function createAulaMonitor(idUsuario, data, hora) {
   );
 
   return rows[0];
+}
+
+export async function updateAulaMonitor(idAula, idUsuario, data, hora) {
+  const { rows } = await db.query(
+    `
+      UPDATE calendario ca
+      SET data_hora = $1::date + $2::time
+      FROM monitor m
+      WHERE ca.id_calendario = $3
+        AND ca.monitor_id = m.id_monitor
+        AND m.usuario_id = $4
+      RETURNING ca.id_calendario AS id
+    `,
+    [data, hora, idAula, idUsuario],
+  );
+
+  return rows[0] || null;
+}
+
+export async function deleteAulaMonitor(idAula, idUsuario) {
+  const { rows } = await db.query(
+    `
+      DELETE FROM calendario ca
+      USING monitor m
+      WHERE ca.id_calendario = $1
+        AND ca.monitor_id = m.id_monitor
+        AND m.usuario_id = $2
+      RETURNING ca.id_calendario AS id
+    `,
+    [idAula, idUsuario],
+  );
+
+  return rows[0] || null;
 }

@@ -4,6 +4,13 @@ export function apiUrl(path) {
   return `${apiBaseUrl}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
+export function apiFetch(path, options = {}) {
+  return fetch(apiUrl(path), {
+    ...options,
+    credentials: "include",
+  });
+}
+
 export async function lerRespostaApi(resposta) {
   const contentType = resposta.headers.get("content-type") || "";
 

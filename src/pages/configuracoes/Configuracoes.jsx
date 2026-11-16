@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
-import { apiUrl, lerRespostaApi } from "../../lib/api";
+import { apiFetch, lerRespostaApi } from "../../lib/api";
 import "./Configuracoes.css";
 
 function buscarUsuarioLogado() {
@@ -48,7 +48,7 @@ function Configuracoes() {
 
     let componenteAtivo = true;
 
-    fetch(apiUrl(`/api/usuarios/${usuarioLogado.id}/configuracoes`))
+    apiFetch(`/api/usuarios/${usuarioLogado.id}/configuracoes`)
       .then(async (resposta) => {
         const dados = await lerRespostaApi(resposta);
 
@@ -143,8 +143,8 @@ function Configuracoes() {
         dados.meetLink = formulario.meetLink;
       }
 
-      const resposta = await fetch(
-        apiUrl(`/api/usuarios/${usuarioLogado.id}/configuracoes`),
+      const resposta = await apiFetch(
+        `/api/usuarios/${usuarioLogado.id}/configuracoes`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -190,8 +190,8 @@ function Configuracoes() {
 
     try {
       setSalvandoSenha(true);
-      const resposta = await fetch(
-        apiUrl(`/api/usuarios/${usuarioLogado.id}/senha`),
+      const resposta = await apiFetch(
+        `/api/usuarios/${usuarioLogado.id}/senha`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },

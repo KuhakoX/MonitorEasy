@@ -187,6 +187,67 @@
   cursor: pointer;
 }
 
+.perfil-monitor-cancel-button {
+  width: 100%;
+  margin-top: 10px;
+  padding: 11px;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #166534;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.perfil-monitor-cancel-button:hover {
+  background: #f0fdf4;
+}
+
+.perfil-monitor-calendar-card {
+  min-width: 0;
+}
+
+.perfil-monitor-agendamento-somente-calendario {
+  grid-template-columns: 1fr;
+}
+
+.perfil-monitor-day {
+  cursor: default;
+}
+
+.perfil-monitor-day-editable {
+  cursor: pointer;
+}
+
+.perfil-monitor-day-editable:hover {
+  background: #ecfdf5;
+  transform: translateY(-2px);
+}
+
+.perfil-monitor-aula-acoes {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.perfil-monitor-aula-acoes button {
+  flex: 1;
+  padding: 6px 4px;
+  border: 1px solid #bbf7d0;
+  border-radius: 7px;
+  background: #f0fdf4;
+  color: #166534;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.perfil-monitor-aula-acoes button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .perfil-monitor-create-button:hover {
   background: #107D68;
 }
@@ -253,13 +314,7 @@
   border: 1px solid #dcfce7;
   border-radius: 14px;
   padding: 10px;
-  cursor: pointer;
   transition: 0.2s;
-}
-
-.perfil-monitor-day:hover {
-  background: #ecfdf5;
-  transform: translateY(-2px);
 }
 
 .perfil-monitor-day strong {

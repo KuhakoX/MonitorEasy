@@ -1,6 +1,7 @@
 import {
   createUsuario,
   createAulaMonitor,
+  deleteAulaMonitor,
   getAulasMonitor,
   alterarSenhaUsuario,
   atualizarConfiguracoesUsuario,
@@ -9,8 +10,10 @@ import {
   getAllUsuarios,
   getMonitorById,
   getMonitores,
+  updateAulaMonitor,
   verifyPassword,
 } from "../models/usuarioModel.js";
+import { criarSessao, encerrarSessao } from "../backend/auth.js";
 
 function validarMeetLink(valor) {
   if (typeof valor !== "string" || !valor.trim()) {
@@ -253,6 +256,8 @@ export async function loginUsuario(req, res) {
       });
     }
 
+    criarSessao(res, usuario.id);
+
     return res.status(200).json({
       message: "Login realizado com sucesso!",
       usuario: {
@@ -269,6 +274,15 @@ export async function loginUsuario(req, res) {
       error: "Erro interno no servidor.",
     });
   }
+}
+
+export async function buscarSessao(req, res) {
+  return res.status(200).json({ usuario: req.usuario });
+}
+
+export async function logoutUsuario(req, res) {
+  encerrarSessao(res);
+  return res.status(200).json({ message: "Sessao encerrada." });
 }
 
 export async function listarUsuarios(req, res) {
@@ -333,21 +347,58 @@ export async function listarAulasMonitor(req, res) {
   }
 }
 
+function validarDataHora(data, hora) {
+  if (
+    typeof data !== "string" ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(data) ||
+    Number.isNaN(Date.parse(`${data}T00:00:00Z`)) ||
+    new Date(`${data}T00:00:00Z`).toISOString().slice(0, 10) !== data ||
+    typeof hora !== "string" ||
+    !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(hora)
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+async function verificarDonoDoPerfil(req, res) {
+  if (req.usuario.tipoUsuario.trim().toLowerCase() !== "monitor") {
+    res.status(403).json({ error: "Somente o monitor pode gerenciar as aulas." });
+    return false;
+  }
+
+  if (!validarIdUsuario(req.params.id)) {
+    res.status(400).json({ error: "Monitor invalido." });
+    return false;
+  }
+
+  if (Number(req.params.id) !== req.usuario.id) {
+    res.status(403).json({ error: "Voce so pode gerenciar as aulas do seu perfil." });
+    return false;
+  }
+
+  const monitor = await getMonitorById(req.params.id);
+
+  if (!monitor) {
+    res.status(404).json({ error: "Monitor nao encontrado." });
+    return false;
+  }
+
+  return true;
+}
+
 export async function cadastrarAulaMonitor(req, res) {
   try {
     const { data, hora } = req.body;
 
-    if (!data || !hora) {
-      return res.status(400).json({
-        error: "Selecione uma data e um horario.",
-      });
+    if (!(await verificarDonoDoPerfil(req, res))) {
+      return;
     }
 
-    const monitor = await getMonitorById(req.params.id);
-
-    if (!monitor) {
-      return res.status(404).json({
-        error: "Monitor nao encontrado.",
+    if (!validarDataHora(data, hora)) {
+      return res.status(400).json({
+        error: "Informe uma data e um horario validos.",
       });
     }
 
@@ -368,5 +419,69 @@ export async function cadastrarAulaMonitor(req, res) {
     return res.status(500).json({
       error: "Erro interno no servidor.",
     });
+  }
+}
+
+export async function editarAulaMonitor(req, res) {
+  try {
+    const { data, hora } = req.body;
+
+    if (!(await verificarDonoDoPerfil(req, res))) {
+      return;
+    }
+
+    if (!validarIdUsuario(req.params.aulaId)) {
+      return res.status(400).json({ error: "Aula invalida." });
+    }
+
+    if (!validarDataHora(data, hora)) {
+      return res.status(400).json({
+        error: "Informe uma data e um horario validos.",
+      });
+    }
+
+    const aulaAtualizada = await updateAulaMonitor(
+      req.params.aulaId,
+      req.usuario.id,
+      data,
+      hora,
+    );
+
+    if (!aulaAtualizada) {
+      return res.status(404).json({ error: "Aula nao encontrada." });
+    }
+
+    return res.status(200).json(await getAulasMonitor(req.params.id));
+  } catch (error) {
+    console.error("Erro ao editar aula:", error);
+
+    return res.status(500).json({ error: "Erro interno no servidor." });
+  }
+}
+
+export async function excluirAulaMonitor(req, res) {
+  try {
+    if (!(await verificarDonoDoPerfil(req, res))) {
+      return;
+    }
+
+    if (!validarIdUsuario(req.params.aulaId)) {
+      return res.status(400).json({ error: "Aula invalida." });
+    }
+
+    const aulaExcluida = await deleteAulaMonitor(
+      req.params.aulaId,
+      req.usuario.id,
+    );
+
+    if (!aulaExcluida) {
+      return res.status(404).json({ error: "Aula nao encontrada." });
+    }
+
+    return res.status(200).json(await getAulasMonitor(req.params.id));
+  } catch (error) {
+    console.error("Erro ao excluir aula:", error);
+
+    return res.status(500).json({ error: "Erro interno no servidor." });
   }
 }

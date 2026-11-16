@@ -75,7 +75,17 @@ não a renomeie para `VITE_*` nem a exponha no frontend.
 ```env
 DATABASE_URL=postgresql://...
 PORT=3001
+SESSION_SECRET=<segredo-aleatorio-de-pelo-menos-32-caracteres>
+FRONTEND_ORIGINS=http://localhost:5173
 ```
+
+`SESSION_SECRET` assina os cookies de sessao e deve ser um valor aleatorio com
+pelo menos 32 caracteres. Mantenha-o somente no ambiente do backend e use um
+valor diferente em cada ambiente. `FRONTEND_ORIGINS` aceita uma lista de
+origens separadas por virgula quando o frontend e a API estiverem em hosts
+diferentes; por padrao, o desenvolvimento local usa `http://localhost:5173`.
+O cookie usa `SameSite=Lax` por padrao. Se frontend e API estiverem em sites
+diferentes, configure `SESSION_COOKIE_SAME_SITE=None` e use HTTPS.
 
 ### Aplicar o esquema no Supabase
 
@@ -118,6 +128,10 @@ Configure no projeto Vercel as variáveis de ambiente do backend:
   painel **Connect** para o ambiente de execução.
 * `SUPABASE_CA_CERT`: conteúdo PEM do certificado CA oficial do Supabase,
   baixado em **Database → Settings → SSL Configuration**.
+* `SESSION_SECRET`: segredo aleatório de pelo menos 32 caracteres usado para
+  assinar a sessão de login.
+* `FRONTEND_ORIGINS`: origens do frontend autorizadas quando ele não estiver no
+  mesmo host da API.
 
 Não configure `DATABASE_URL` como variável `VITE_*`. Ela e o certificado são
 usados exclusivamente pela função Node.js. Após adicionar as funções e variáveis,
@@ -164,6 +178,11 @@ Corpo da requisição:
   "senha": "123456"
 }
 ```
+
+O login cria um cookie de sessão `HttpOnly`; as rotas da agenda exigem uma
+sessão válida. Apenas o monitor dono do perfil pode criar, editar e excluir
+aulas. Alunos e monitores autenticados podem ver as aulas e acessar o link da
+sala.
 
 ## Fluxo da aplicação
 
