@@ -127,6 +127,48 @@
   display: block;
 }
 
+.perfil-monitor-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 6px;
+  border: 1px solid #dcfce7;
+  border-radius: 14px;
+  background: #eaf8ef;
+}
+
+.perfil-monitor-tab {
+  flex: 1;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #166534;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.perfil-monitor-tab[aria-selected="true"] {
+  background: #ffffff;
+  color: #14532d;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.12);
+}
+
+.perfil-monitor-tab:focus-visible {
+  outline: 3px solid #107d68;
+  outline-offset: 2px;
+}
+
+.perfil-monitor-tabpanel {
+  min-width: 0;
+}
+
+.perfil-monitor-tabpanel[hidden] {
+  display: none;
+}
+
 .perfil-monitor-calendar-card {
   background: #ffffff;
   border: 1px solid #dcfce7;
@@ -477,11 +519,7 @@
 }
 
 .perfil-monitor-comunidade {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: start;
-  gap: 24px;
-  margin-top: 28px;
+  display: block;
 }
 
 .perfil-monitor-conteudo-card {
@@ -649,8 +687,14 @@
     padding: 22px;
   }
 
-  .perfil-monitor-comunidade {
-    grid-template-columns: 1fr;
+  .perfil-monitor-tabs {
+    gap: 4px;
+    padding: 4px;
+  }
+
+  .perfil-monitor-tab {
+    padding: 10px 6px;
+    font-size: 13px;
   }
 
   .perfil-monitor-conteudo-card {

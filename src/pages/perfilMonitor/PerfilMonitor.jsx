@@ -42,6 +42,12 @@ function formatarTamanhoArquivo(bytes) {
     : `${(tamanho / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+const ABAS_PERFIL = [
+  { id: "calendario", rotulo: "Calendário" },
+  { id: "mural", rotulo: "Mural" },
+  { id: "avaliacoes", rotulo: "Avaliações" },
+];
+
 function PerfilMonitor() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -69,6 +75,7 @@ function PerfilMonitor() {
   const [descricaoAula, setDescricaoAula] = useState("");
   const [aulas, setAulas] = useState([]);
   const [materiais, setMateriais] = useState([]);
+  const [abaAtiva, setAbaAtiva] = useState("calendario");
   const [tituloMaterial, setTituloMaterial] = useState("");
   const [descricaoMaterial, setDescricaoMaterial] = useState("");
   const [arquivoMaterial, setArquivoMaterial] = useState(null);
@@ -134,6 +141,7 @@ function PerfilMonitor() {
         if (componenteAtivo) {
           setMonitor(dadosMonitor);
           setUsuarioAtual(usuario);
+          setAbaAtiva("calendario");
           setAulas([]);
           setMateriais([]);
           setAvaliacoes({
@@ -649,6 +657,31 @@ function PerfilMonitor() {
     return aulas.filter((aula) => aula.data === data);
   }
 
+  function navegarAbas(event) {
+    const indiceAtual = ABAS_PERFIL.findIndex((aba) => aba.id === abaAtiva);
+    let proximoIndice;
+
+    if (event.key === "ArrowRight") {
+      proximoIndice = (indiceAtual + 1) % ABAS_PERFIL.length;
+    } else if (event.key === "ArrowLeft") {
+      proximoIndice =
+        (indiceAtual - 1 + ABAS_PERFIL.length) % ABAS_PERFIL.length;
+    } else if (event.key === "Home") {
+      proximoIndice = 0;
+    } else if (event.key === "End") {
+      proximoIndice = ABAS_PERFIL.length - 1;
+    } else {
+      return;
+    }
+
+    event.preventDefault();
+    const proximaAba = ABAS_PERFIL[proximoIndice];
+    setAbaAtiva(proximaAba.id);
+    event.currentTarget
+      .querySelector(`#perfil-monitor-tab-${proximaAba.id}`)
+      ?.focus();
+  }
+
   const diasDoMes = pegarDiasDoMes();
   const mensagemErro = id ? erro : "Selecione um monitor na pagina inicial.";
   const exibindoCarregamento =
@@ -716,7 +749,39 @@ function PerfilMonitor() {
             )}
 
             {usuarioAtual && (
-              <section className="perfil-monitor-agendamento">
+              <div
+                className="perfil-monitor-tabs"
+                role="tablist"
+                aria-label="Seções do perfil do monitor"
+                onKeyDown={navegarAbas}
+              >
+                {ABAS_PERFIL.map((aba) => (
+                  <button
+                    className="perfil-monitor-tab"
+                    id={`perfil-monitor-tab-${aba.id}`}
+                    key={aba.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={abaAtiva === aba.id}
+                    aria-controls={`perfil-monitor-panel-${aba.id}`}
+                    tabIndex={abaAtiva === aba.id ? 0 : -1}
+                    onClick={() => setAbaAtiva(aba.id)}
+                  >
+                    {aba.rotulo}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {usuarioAtual && (
+              <section
+                className="perfil-monitor-agendamento perfil-monitor-tabpanel"
+                id="perfil-monitor-panel-calendario"
+                role="tabpanel"
+                aria-labelledby="perfil-monitor-tab-calendario"
+                tabIndex={0}
+                hidden={abaAtiva !== "calendario"}
+              >
                 <div className="perfil-monitor-calendar-card">
                   <div className="perfil-monitor-calendar-header">
                     <button type="button" onClick={voltarMes}>
@@ -832,7 +897,14 @@ function PerfilMonitor() {
             )}
 
             {usuarioAtual && (
-              <section className="perfil-monitor-comunidade">
+              <section
+                className="perfil-monitor-comunidade perfil-monitor-tabpanel"
+                id="perfil-monitor-panel-mural"
+                role="tabpanel"
+                aria-labelledby="perfil-monitor-tab-mural"
+                tabIndex={0}
+                hidden={abaAtiva !== "mural"}
+              >
                 <div className="perfil-monitor-conteudo-card">
                   <div className="perfil-monitor-conteudo-heading">
                     <div>
@@ -979,7 +1051,18 @@ function PerfilMonitor() {
                     </ul>
                   )}
                 </div>
+              </section>
+            )}
 
+            {usuarioAtual && (
+              <section
+                className="perfil-monitor-comunidade perfil-monitor-tabpanel"
+                id="perfil-monitor-panel-avaliacoes"
+                role="tabpanel"
+                aria-labelledby="perfil-monitor-tab-avaliacoes"
+                tabIndex={0}
+                hidden={abaAtiva !== "avaliacoes"}
+              >
                 <div className="perfil-monitor-conteudo-card">
                   <div className="perfil-monitor-conteudo-heading">
                     <div>
