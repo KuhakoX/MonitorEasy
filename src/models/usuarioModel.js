@@ -404,6 +404,7 @@ export async function getAulasMonitor(idUsuario) {
       SELECT
         ca.id_calendario AS id,
         ca.titulo,
+        ca.descricao,
         to_char(ca.data_hora, 'YYYY-MM-DD') AS data,
         to_char(ca.data_hora, 'HH24:MI') AS hora,
         COALESCE(c.meet_link, m.meet_link) AS "meetLink"
@@ -422,7 +423,13 @@ export async function getAulasMonitor(idUsuario) {
   }));
 }
 
-export async function createAulaMonitor(idUsuario, data, hora) {
+export async function createAulaMonitor(
+  idUsuario,
+  data,
+  hora,
+  titulo,
+  descricao,
+) {
   const idMonitor = await getMonitorAgendaId(idUsuario);
 
   if (!idMonitor) {
@@ -431,28 +438,43 @@ export async function createAulaMonitor(idUsuario, data, hora) {
 
   const { rows } = await db.query(
     `
-      INSERT INTO calendario (data_hora, titulo, monitor_id)
-      VALUES ($1::date + $2::time, 'Aula agendada', $3)
+      INSERT INTO calendario (
+        data_hora,
+        titulo,
+        descricao,
+        monitor_id
+      )
+      VALUES ($1::date + $2::time, $3, $4, $5)
       RETURNING id_calendario AS id
     `,
-    [data, hora, idMonitor],
+    [data, hora, titulo, descricao, idMonitor],
   );
 
   return rows[0];
 }
 
-export async function updateAulaMonitor(idAula, idUsuario, data, hora) {
+export async function updateAulaMonitor(
+  idAula,
+  idUsuario,
+  data,
+  hora,
+  titulo,
+  descricao,
+) {
   const { rows } = await db.query(
     `
       UPDATE calendario ca
-      SET data_hora = $1::date + $2::time
+      SET
+        data_hora = $1::date + $2::time,
+        titulo = $3,
+        descricao = $4
       FROM monitor m
-      WHERE ca.id_calendario = $3
+      WHERE ca.id_calendario = $5
         AND ca.monitor_id = m.id_monitor
-        AND m.usuario_id = $4
+        AND m.usuario_id = $6
       RETURNING ca.id_calendario AS id
     `,
-    [data, hora, idAula, idUsuario],
+    [data, hora, titulo, descricao, idAula, idUsuario],
   );
 
   return rows[0] || null;

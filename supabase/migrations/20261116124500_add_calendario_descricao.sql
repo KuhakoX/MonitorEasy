@@ -1,0 +1,2 @@
+ALTER TABLE calendario
+  ADD COLUMN IF NOT EXISTS descricao TEXT NOT NULL DEFAULT '';

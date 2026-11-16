@@ -377,6 +377,17 @@ function validarDataHora(data, hora) {
   return true;
 }
 
+function validarConteudoAula(titulo, descricao) {
+  return (
+    typeof titulo === "string" &&
+    Boolean(titulo.trim()) &&
+    titulo.trim().length <= 200 &&
+    typeof descricao === "string" &&
+    Boolean(descricao.trim()) &&
+    descricao.trim().length <= 2000
+  );
+}
+
 async function verificarDonoDoPerfil(req, res) {
   if (req.usuario.tipoUsuario.trim().toLowerCase() !== "monitor") {
     res.status(403).json({ error: "Somente o monitor pode gerenciar as aulas." });
@@ -405,19 +416,25 @@ async function verificarDonoDoPerfil(req, res) {
 
 export async function cadastrarAulaMonitor(req, res) {
   try {
-    const { data, hora } = req.body;
+    const { data, hora, titulo, descricao } = req.body;
 
     if (!(await verificarDonoDoPerfil(req, res))) {
       return;
     }
 
-    if (!validarDataHora(data, hora)) {
+    if (!validarDataHora(data, hora) || !validarConteudoAula(titulo, descricao)) {
       return res.status(400).json({
-        error: "Informe uma data e um horario validos.",
+        error: "Informe data, horario, titulo e descricao validos.",
       });
     }
 
-    const aulaCriada = await createAulaMonitor(req.params.id, data, hora);
+    const aulaCriada = await createAulaMonitor(
+      req.params.id,
+      data,
+      hora,
+      titulo.trim(),
+      descricao.trim(),
+    );
 
     if (!aulaCriada) {
       return res.status(400).json({
@@ -439,7 +456,7 @@ export async function cadastrarAulaMonitor(req, res) {
 
 export async function editarAulaMonitor(req, res) {
   try {
-    const { data, hora } = req.body;
+    const { data, hora, titulo, descricao } = req.body;
 
     if (!(await verificarDonoDoPerfil(req, res))) {
       return;
@@ -449,9 +466,9 @@ export async function editarAulaMonitor(req, res) {
       return res.status(400).json({ error: "Aula invalida." });
     }
 
-    if (!validarDataHora(data, hora)) {
+    if (!validarDataHora(data, hora) || !validarConteudoAula(titulo, descricao)) {
       return res.status(400).json({
-        error: "Informe uma data e um horario validos.",
+        error: "Informe data, horario, titulo e descricao validos.",
       });
     }
 
@@ -460,6 +477,8 @@ export async function editarAulaMonitor(req, res) {
       req.usuario.id,
       data,
       hora,
+      titulo.trim(),
+      descricao.trim(),
     );
 
     if (!aulaAtualizada) {

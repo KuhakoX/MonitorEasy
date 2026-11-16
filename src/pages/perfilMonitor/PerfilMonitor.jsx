@@ -17,11 +17,15 @@ function PerfilMonitor() {
   const [salvandoAula, setSalvandoAula] = useState(false);
   const [aulaEditandoId, setAulaEditandoId] = useState(null);
   const [aulaExcluindoId, setAulaExcluindoId] = useState(null);
+  const [modalAulaAberto, setModalAulaAberto] = useState(false);
+  const [aulaDetalhes, setAulaDetalhes] = useState(null);
   const [erro, setErro] = useState("");
   const [mesAtual, setMesAtual] = useState(hoje.getMonth());
   const [anoAtual, setAnoAtual] = useState(hoje.getFullYear());
   const [dataSelecionada, setDataSelecionada] = useState("");
   const [horaSelecionada, setHoraSelecionada] = useState("");
+  const [tituloAula, setTituloAula] = useState("");
+  const [descricaoAula, setDescricaoAula] = useState("");
   const [aulas, setAulas] = useState([]);
 
   const meses = [
@@ -121,6 +125,27 @@ function PerfilMonitor() {
     };
   }, [id]);
 
+  useEffect(() => {
+    if (!modalAulaAberto && !aulaDetalhes) {
+      return undefined;
+    }
+
+    function fecharComEscape(event) {
+      if (event.key === "Escape") {
+        setModalAulaAberto(false);
+        setAulaDetalhes(null);
+        setAulaEditandoId(null);
+        setErro("");
+      }
+    }
+
+    window.addEventListener("keydown", fecharComEscape);
+
+    return () => {
+      window.removeEventListener("keydown", fecharComEscape);
+    };
+  }, [modalAulaAberto, aulaDetalhes]);
+
   function formatarData(ano, mes, dia) {
     const mesFormatado = String(mes + 1).padStart(2, "0");
     const diaFormatado = String(dia).padStart(2, "0");
@@ -165,6 +190,33 @@ function PerfilMonitor() {
   function selecionarDia(dia) {
     const data = formatarData(anoAtual, mesAtual, dia);
     setDataSelecionada(data);
+    setHoraSelecionada("");
+    setTituloAula("");
+    setDescricaoAula("");
+    setAulaEditandoId(null);
+    setErro("");
+    setModalAulaAberto(true);
+  }
+
+  function iniciarEdicao(aula, event) {
+    event.stopPropagation();
+    setDataSelecionada(aula.data);
+    setHoraSelecionada(aula.hora);
+    setTituloAula(aula.titulo);
+    setDescricaoAula(aula.descricao || "");
+    setAulaEditandoId(aula.id);
+    setErro("");
+    setModalAulaAberto(true);
+  }
+
+  function fecharModalAula() {
+    setModalAulaAberto(false);
+    setAulaEditandoId(null);
+    setErro("");
+  }
+
+  function abrirDetalhesAula(aula) {
+    setAulaDetalhes(aula);
   }
 
   async function criarAula(event) {
@@ -175,8 +227,13 @@ function PerfilMonitor() {
       return;
     }
 
-    if (!dataSelecionada || !horaSelecionada) {
-      setErro("Selecione uma data e um horario.");
+    if (
+      !dataSelecionada ||
+      !horaSelecionada ||
+      !tituloAula.trim() ||
+      !descricaoAula.trim()
+    ) {
+      setErro("Preencha a data, o horario, o titulo e a descricao da aula.");
       return;
     }
 
@@ -195,6 +252,8 @@ function PerfilMonitor() {
         body: JSON.stringify({
           data: dataSelecionada,
           hora: horaSelecionada,
+          titulo: tituloAula,
+          descricao: descricaoAula,
         }),
       });
 
@@ -205,9 +264,11 @@ function PerfilMonitor() {
 
       const aulasAtualizadas = await lerRespostaApi(resposta);
       setAulas(aulasAtualizadas);
+      fecharModalAula();
       setAulaEditandoId(null);
       setHoraSelecionada("");
-
+      setTituloAula("");
+      setDescricaoAula("");
       setErro("");
     } catch (error) {
       setErro(error.message);
@@ -216,17 +277,13 @@ function PerfilMonitor() {
     }
   }
 
-  function iniciarEdicao(aula, event) {
-    event.stopPropagation();
-    setAulaEditandoId(aula.id);
-    setDataSelecionada(aula.data);
-    setHoraSelecionada(aula.hora);
-    setErro("");
-  }
-
   function cancelarEdicao() {
+    setModalAulaAberto(false);
     setAulaEditandoId(null);
     setHoraSelecionada("");
+    setTituloAula("");
+    setDescricaoAula("");
+    setErro("");
   }
 
   async function excluirAula(aula, event) {
@@ -328,62 +385,7 @@ function PerfilMonitor() {
             )}
 
             {usuarioAtual && (
-              <section
-                className={
-                  ehDonoDoPerfil
-                    ? "perfil-monitor-agendamento"
-                    : "perfil-monitor-agendamento perfil-monitor-agendamento-somente-calendario"
-                }
-              >
-                {ehDonoDoPerfil && (
-                  <div className="perfil-monitor-form-card">
-                    <h2>{aulaEditandoId ? "Editar aula" : "Agendar aula"}</h2>
-
-                    <form onSubmit={criarAula}>
-                      <div className="perfil-monitor-input-group">
-                        <label>Data selecionada</label>
-                        <input
-                          type="text"
-                          value={dataSelecionada}
-                          placeholder="Clique em um dia no calendario"
-                          readOnly
-                        />
-                      </div>
-
-                      <div className="perfil-monitor-input-group">
-                        <label>Horario da aula</label>
-                        <input
-                          type="time"
-                          value={horaSelecionada}
-                          onChange={(e) => setHoraSelecionada(e.target.value)}
-                        />
-                      </div>
-
-                      <button
-                        type="submit"
-                        className="perfil-monitor-create-button"
-                        disabled={salvandoAula}
-                      >
-                        {salvandoAula
-                          ? "Salvando..."
-                          : aulaEditandoId
-                            ? "Salvar alteracoes"
-                            : "Criar aula"}
-                      </button>
-
-                      {aulaEditandoId && (
-                        <button
-                          type="button"
-                          className="perfil-monitor-cancel-button"
-                          onClick={cancelarEdicao}
-                        >
-                          Cancelar edicao
-                        </button>
-                      )}
-                    </form>
-                  </div>
-                )}
-
+              <section className="perfil-monitor-agendamento">
                 <div className="perfil-monitor-calendar-card">
                   <div className="perfil-monitor-calendar-header">
                     <button type="button" onClick={voltarMes}>
@@ -443,20 +445,27 @@ function PerfilMonitor() {
 
                           {aulasDoDia.map((aula) => (
                             <div className="perfil-monitor-aula" key={aula.id}>
-                              <span>{aula.hora}</span>
-                              <small>{aula.titulo}</small>
+                              <button
+                                type="button"
+                                className="perfil-monitor-aula-resumo"
+                                onClick={(event) => {
+                                  event.stopPropagation();
 
-                              {aula.meetLink && (
-                                <a
-                                  href={aula.meetLink}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="perfil-monitor-meet-button"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  Entrar
-                                </a>
-                              )}
+                                  if (ehDonoDoPerfil) {
+                                    iniciarEdicao(aula, event);
+                                  } else {
+                                    abrirDetalhesAula(aula);
+                                  }
+                                }}
+                              >
+                                <span>{aula.hora}</span>
+                                <small>{aula.titulo}</small>
+                                <span className="perfil-monitor-aula-abrir">
+                                  {ehDonoDoPerfil
+                                    ? "Abrir para editar"
+                                    : "Ver detalhes"}
+                                </span>
+                              </button>
 
                               {ehDonoDoPerfil && (
                                 <div className="perfil-monitor-aula-acoes">
@@ -491,7 +500,7 @@ function PerfilMonitor() {
               </section>
             )}
 
-            {mensagemErro && (
+            {mensagemErro && !modalAulaAberto && !aulaDetalhes && (
               <div
                 className="perfil-monitor-feedback perfil-monitor-feedback-error"
                 role="alert"
@@ -500,6 +509,165 @@ function PerfilMonitor() {
               </div>
             )}
           </>
+        )}
+
+        {modalAulaAberto && ehDonoDoPerfil && (
+          <div
+            className="perfil-monitor-modal-overlay"
+            onClick={fecharModalAula}
+          >
+            <section
+              className="perfil-monitor-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="perfil-monitor-modal-titulo"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="perfil-monitor-modal-header">
+                <h2 id="perfil-monitor-modal-titulo">
+                  {aulaEditandoId ? "Editar aula" : "Nova aula"}
+                </h2>
+                <button
+                  type="button"
+                  className="perfil-monitor-modal-fechar"
+                  aria-label="Fechar"
+                  onClick={fecharModalAula}
+                >
+                  &times;
+                </button>
+              </div>
+
+              <form onSubmit={criarAula}>
+                <div className="perfil-monitor-modal-campo">
+                  <label htmlFor="data-aula">Data</label>
+                  <input
+                    id="data-aula"
+                    type="date"
+                    value={dataSelecionada}
+                    onChange={(event) => setDataSelecionada(event.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="perfil-monitor-modal-campo">
+                  <label htmlFor="hora-aula">Horario</label>
+                  <input
+                    id="hora-aula"
+                    type="time"
+                    value={horaSelecionada}
+                    onChange={(event) => setHoraSelecionada(event.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="perfil-monitor-modal-campo">
+                  <label htmlFor="titulo-aula">Nome da aula</label>
+                  <input
+                    id="titulo-aula"
+                    type="text"
+                    value={tituloAula}
+                    onChange={(event) => setTituloAula(event.target.value)}
+                    maxLength={200}
+                    required
+                  />
+                </div>
+
+                <div className="perfil-monitor-modal-campo">
+                  <label htmlFor="descricao-aula">Descricao</label>
+                  <textarea
+                    id="descricao-aula"
+                    value={descricaoAula}
+                    onChange={(event) => setDescricaoAula(event.target.value)}
+                    maxLength={2000}
+                    rows={5}
+                    required
+                  />
+                </div>
+
+                {modalAulaAberto && erro && (
+                  <p className="perfil-monitor-modal-erro" role="alert">
+                    {erro}
+                  </p>
+                )}
+
+                <div className="perfil-monitor-modal-acoes">
+                  <button
+                    type="button"
+                    className="perfil-monitor-modal-cancelar"
+                    onClick={cancelarEdicao}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="perfil-monitor-create-button"
+                    disabled={salvandoAula}
+                  >
+                    {salvandoAula
+                      ? "Salvando..."
+                      : aulaEditandoId
+                        ? "Salvar alteracoes"
+                        : "Criar aula"}
+                  </button>
+                </div>
+              </form>
+            </section>
+          </div>
+        )}
+
+        {aulaDetalhes && (
+          <div
+            className="perfil-monitor-modal-overlay"
+            onClick={() => setAulaDetalhes(null)}
+          >
+            <section
+              className="perfil-monitor-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="perfil-monitor-detalhes-titulo"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="perfil-monitor-modal-header">
+                <h2 id="perfil-monitor-detalhes-titulo">
+                  {aulaDetalhes.titulo}
+                </h2>
+                <button
+                  type="button"
+                  className="perfil-monitor-modal-fechar"
+                  aria-label="Fechar"
+                  onClick={() => setAulaDetalhes(null)}
+                >
+                  &times;
+                </button>
+              </div>
+
+              <p className="perfil-monitor-detalhes-data">
+                {aulaDetalhes.data} as {aulaDetalhes.hora}
+              </p>
+              <p className="perfil-monitor-detalhes-descricao">
+                {aulaDetalhes.descricao || "Descricao ainda nao informada."}
+              </p>
+
+              {aulaDetalhes.meetLink ? (
+                <a
+                  href={aulaDetalhes.meetLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="perfil-monitor-meet-button"
+                >
+                  Entrar na aula
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  className="perfil-monitor-meet-button"
+                  disabled
+                >
+                  Link da aula nao configurado
+                </button>
+              )}
+            </section>
+          </div>
         )}
       </main>
     </div>

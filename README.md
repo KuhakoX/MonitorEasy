@@ -24,14 +24,16 @@ O **Monitor Easy** é uma aplicação web desenvolvida em React com backend em N
 * Configurações de conta específicas para alunos e monitores
 * Perfil do monitor
 * Exibição de nome, nota e matéria do monitor
-* Calendário interativo para criação de horários de aula
-* Botão para acessar aula pelo Google Meet
+np* Calendário interativo para criar e editar aulas com título e descrição em um popup
+* Popup com os detalhes da aula e botão para acessar o Google Meet
 * Integração com banco de dados PostgreSQL no Supabase
 
 As configurações permitem que alunos editem nome e biografia; monitores também
 podem gerenciar as matérias ensinadas e o link do Google Meet. A troca de senha
 é uma ação separada e opcional. As tabelas são criadas por migrações versionadas
 em `supabase/migrations`, e as senhas são armazenadas com hash.
+Cada aula tem título, descrição, data e horário; as descrições das aulas antigas
+ficam vazias após a migração.
 
 ## Estrutura do projeto
 
